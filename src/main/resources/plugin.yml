@@ -1,0 +1,16 @@
+name: Dungeons
+author: MankaiStep
+version: 1.0
+load: POSTWORLD
+main: me.manaki.plugin.dungeons.main.Dungeons
+depend: [MythicMobs, EssentialsSpawn]
+softdepend: [Shops, Vault]
+api-version: 1.16
+commands:
+    dungeons:
+        description: Plugin's commands
+        aliases: [dadmin, d3, sd]
+        permission: dungeon.command
+    dungeon:
+        description: Plugin's commands
+        aliases: [d, phoban]
