@@ -20,7 +20,8 @@ public class Guardeds {
             String name = config.getString("guarded." + id + ".name");
             int color = config.getInt("guarded." + id + ".color");
             double health = config.getDouble("guarded." + id + ".health");
-            Guarded slv = new Guarded(name, color, health);
+            double targetRadius = config.getDouble("guarded." + id + ".target-radius");
+            Guarded slv = new Guarded(name, color, health, targetRadius);
             guardeds.put(id, slv);
         });
     }

@@ -50,11 +50,14 @@ public class DGuardedTask extends BukkitRunnable {
     public void checkTarget() {
         if (!isSpawned) return;
         for (LivingEntity le : this.status.getTurnStatus().getMobToKills().keySet()) {
-            if (le instanceof Monster) {
-                var m = (Monster) le;
-                if (!Guardeds.canTarget(m)) continue;
-                m.setTarget(entity);
-            }
+            if (!(le instanceof Monster)) continue;
+            var m = (Monster) le;
+            var g = Guardeds.get(this.id);
+
+            if (m.getWorld() == entity.getWorld() && m.getLocation().distanceSquared(entity.getLocation()) > g.getTargetRadius() * g.getTargetRadius()) continue;
+            if (!Guardeds.canTarget(m)) continue;
+
+            m.setTarget(entity);
         }
     }
 

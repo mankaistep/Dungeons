@@ -78,6 +78,7 @@ guarded:
    name: '&f&lJohn'
    color: 3
    health: 30
+   target-radius: 10
 
 
 dungeon:
