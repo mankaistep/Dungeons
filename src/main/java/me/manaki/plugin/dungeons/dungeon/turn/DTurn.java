@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DTurn extends Configable {
-	
+
+	private String objective;
 	private TWinReq wr;
 	private TLoseReq lr;
 	private TCommand cmd;
@@ -55,8 +56,14 @@ public class DTurn extends Configable {
 		return null;
 	}
 
+	public String getObjective() {
+		return this.objective;
+	}
+
 	@Override
 	public void load(FileConfiguration config, String path) {
+		this.objective = config.contains(path + ".objective") ? config.getString(path + ".objective") : "";
+
 		// Win Req
 		int save = config.getInt(path + ".win-req.slave-save");
 		List<String> kills = Utils.from(config.getString(path + ".win-req.kill"), ";");
@@ -108,6 +115,8 @@ public class DTurn extends Configable {
 
 	@Override
 	public void save(FileConfiguration config, String path) {
+		config.set(path + ".objective", this.getObjective());
+
 		// Win Req
 		config.set(path + ".win-req.slave-save", this.getWinRequirement().getSlaveSave());
 		config.set(path + ".win-req.kill", this.getWinRequirement().killsToString());

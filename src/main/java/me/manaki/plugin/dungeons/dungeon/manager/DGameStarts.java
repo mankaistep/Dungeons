@@ -1,5 +1,7 @@
 package me.manaki.plugin.dungeons.dungeon.manager;
 
+import be.maximvdw.featherboard.P;
+import be.maximvdw.featherboard.api.FeatherBoardAPI;
 import com.google.common.collect.Lists;
 import me.manaki.plugin.dungeons.dungeon.task.*;
 import me.manaki.plugin.dungeons.dungeon.turn.TSGuarded;
@@ -45,7 +47,8 @@ public class DGameStarts {
 		doChests(id);
 		
 		// Status
-		BossBar bb = createTimingBar(id);
+		BossBar bb = null;
+		if (Dungeons.get().featherBoard == null) bb = createTimingBar(id);
 		createStatus(id, players, bb);
 		
 		// Teleport
@@ -57,11 +60,17 @@ public class DGameStarts {
 		
 		// Turn
 		startTurn(id, 1);
-		
+
+		// Featherboard
+		for (UUID uuid : players) {
+			Player p = Bukkit.getPlayer(uuid);
+			featherBoardCheck(p);
+		}
+
 		// Event
 		Bukkit.getPluginManager().callEvent(new DungeonStartEvent(id));
 	}
-	
+
 	public static void startNextTurn(String id) {
 		DStatus status = DGameUtils.getStatus(id);
 		int turn = status.getTurn();
@@ -118,13 +127,16 @@ public class DGameStarts {
 	}
 	
 	private static void createStatus(String id, List<UUID> players, BossBar bb) {
-		DStatus status = new DStatus(players, bb);
+		DStatus status = new DStatus(System.currentTimeMillis(), players, bb);
 		TStatus ts = new TStatus();
 		status.setTurnStatus(ts);
 		status.setBossBar(bb);
-		players.forEach(uuid -> {
-			bb.addPlayer(Bukkit.getPlayer(uuid));
-		});
+		if (bb != null) {
+			players.forEach(uuid -> {
+				bb.addPlayer(Bukkit.getPlayer(uuid));
+			});
+		}
+
 		DGameUtils.setStatus(id, status);
 	}
 	
@@ -234,6 +246,15 @@ public class DGameStarts {
 				d.getLocation(chest.getLocation()).getLocation().getBlock().setType(Material.AIR);
 			});
 		});
+	}
+
+	/*
+	Featherboard
+	 */
+	public static void featherBoardCheck(Player player) {
+		if (Dungeons.get().featherBoard != null) {
+			FeatherBoardAPI.showScoreboard(player, Dungeons.get().featherBoard);
+		}
 	}
 	
 }

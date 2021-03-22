@@ -10,6 +10,7 @@ import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
 import org.bukkit.Bukkit;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 public class DGamePlays {
@@ -18,7 +19,8 @@ public class DGamePlays {
 		String id = DPlayerUtils.getCurrentDungeon(player);
 		if (id == null) return;
 		DStatus sd = DGameUtils.getStatus(id);
-		sd.getBossBar().removePlayer(player);
+		BossBar bb = sd.getBossBar();
+		if (bb != null) bb.removePlayer(player);
 		sd.removePlayer(player);
 		if (toSpawn) player.teleport(Utils.getPlayerSpawn());
 		Lang.DUNGEON_PLAYER_KICK.send(player);
@@ -37,7 +39,8 @@ public class DGamePlays {
 		
 		int maxDead = d.getRule().getRespawnTime() + DPlayer.from(player).getReviveBuff();
 		if (pds.getDead() > maxDead) {
-			sd.getBossBar().removePlayer(player);
+			BossBar bb = sd.getBossBar();
+			if (bb != null) bb.removePlayer(player);
 			sd.removePlayer(player);
 			if (teleport) player.teleport(Utils.getPlayerSpawn());
 			sd.getPlayers().forEach(uuid -> {
@@ -45,6 +48,10 @@ public class DGamePlays {
 				Lang.DUNGEON_PLAYER_DEAD_KICK_OTHER.send(p, "%player%", "" + player.getName());
 			});
 			Lang.DUNGEON_PLAYER_DEAD_KICK.send(player, "%dead_remain%", "" + (maxDead - pds.getDead()));
+
+			// Featherboard
+			DGameEnds.featherBoardCheck(player);
+
 			return;
 		}
 		
@@ -54,6 +61,8 @@ public class DGamePlays {
 		Lang.DUNGEON_PLAYER_DEAD_RESPAWN.send(player, "%dead_remain%", "" + (maxDead - pds.getDead()));
 		Lang.DUNGEON_PLAYER_GOD.send(player, "%second%", "3");
 	}
+
+
 
 	
 }

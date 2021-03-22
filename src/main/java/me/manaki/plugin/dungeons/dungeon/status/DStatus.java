@@ -14,7 +14,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class DStatus {
-	
+
+	private long start;
 	private List<UUID> starters;
 	private List<UUID> players;
 	private Map<UUID, DStatistic> statistics;	
@@ -27,7 +28,8 @@ public class DStatus {
 	private String checkPoint;
 	private Map<UUID, List<String>> openedChests;
 	
-	public DStatus(List<UUID> players, BossBar bossbar) {
+	public DStatus(long start, List<UUID> players, BossBar bossbar) {
+		this.start = start;
 		this.starters = players;
 		this.players = players;
 		this.bossbar = bossbar;
@@ -111,7 +113,7 @@ public class DStatus {
 	public void removePlayer(UUID uuid) {
 		this.players.remove(uuid);
 		Player player = Bukkit.getPlayer(uuid);
-		if (player != null) this.bossbar.removePlayer(player);
+		if (player != null && this.bossbar != null) this.bossbar.removePlayer(player);
 	}
 	
 	public void setBossBar(BossBar bossbar) {
@@ -141,5 +143,9 @@ public class DStatus {
 	public void setCheckpoint(String cp) {
 		this.checkPoint = cp;
 	}
-	
+
+	public long getStart() {
+		return this.start;
+	}
+
 }

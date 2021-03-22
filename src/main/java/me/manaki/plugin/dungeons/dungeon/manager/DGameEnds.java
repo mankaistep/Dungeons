@@ -1,5 +1,6 @@
 package me.manaki.plugin.dungeons.dungeon.manager;
 
+import be.maximvdw.featherboard.api.FeatherBoardAPI;
 import me.manaki.plugin.dungeons.command.Command;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.status.DungeonResult;
@@ -18,6 +19,7 @@ import me.manaki.plugin.dungeons.dungeon.rewardreq.DRewardReq;
 import me.manaki.plugin.dungeons.lang.Lang;
 import me.manaki.plugin.dungeons.queue.DQueues;
 import org.bukkit.*;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -118,7 +120,8 @@ public class DGameEnds {
 		Bukkit.getPluginManager().callEvent(new DungeonFinishEvent(id, status, result));
 		
 		// Clear
-		status.getBossBar().removeAll();
+		BossBar bb = status.getBossBar();
+		if (bb != null) bb.removeAll();
 		status.getTasks().forEach(br -> {
 			if (!br.isCancelled()) br.cancel();
 		});
@@ -126,7 +129,13 @@ public class DGameEnds {
 		
 		// Log
 		System.out.println("[Dungeon3] Dungeon " + id + " finished (" + result.name() + ")");
-		
+
+		// FeatherBoard
+		for (UUID uuid : remainPlayers) {
+			Player player = Bukkit.getPlayer(uuid);
+			featherBoardCheck(player);
+		}
+
 		// Quitting task
 		long start = System.currentTimeMillis();
 		new BukkitRunnable() {
@@ -158,7 +167,15 @@ public class DGameEnds {
 				.map(Bukkit::getPlayer)
 				.collect(Collectors.toList());
 	}
-	
+
+	/*
+	Featherboard
+ 	*/
+	public static void featherBoardCheck(Player player) {
+		if (Dungeons.get().featherBoard != null) {
+			FeatherBoardAPI.showScoreboard(player, "default");
+		}
+	}
 	
 	
 }

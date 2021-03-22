@@ -11,6 +11,11 @@
 # [sound] <sound>;f1;f2
 # [showrank]
 # Rank: S, A, B, C, D, F
+
+featherboard:
+  enable: true
+  board: dungeon
+
 ticket:
   item:
     name: '&6&lVé phó bản &e&l%dungeon_name%'
@@ -120,6 +125,7 @@ dungeon:
     - l3
     turn:
       t1:
+        objective: Hạ gục toàn bộ kẻ địch và giải cứu người dân
         win-req:
           slave-save: 5
           kill: mob1;mob2 #*

@@ -5,6 +5,7 @@ import me.manaki.plugin.dungeons.buff.Buff;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.guarded.Guardeds;
 import me.manaki.plugin.dungeons.listener.EntityListener;
+import me.manaki.plugin.dungeons.placeholder.DungeonPlaceholder;
 import me.manaki.plugin.dungeons.queue.DQueueTask;
 import me.manaki.plugin.dungeons.yaml.YamlFile;
 import me.manaki.plugin.dungeons.dungeon.manager.DGameEnds;
@@ -26,7 +27,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Dungeons extends JavaPlugin {
 	
 	public boolean loaded = false;
-	
+	public String featherBoard = null;
+
 	@Override
 	public void onEnable() {
 		this.registerCommands();
@@ -55,6 +57,14 @@ public class Dungeons extends JavaPlugin {
 		Tickets.init(YamlFile.CONFIG.get());
 		Slaves.reload(YamlFile.CONFIG.get());
 		Guardeds.reload(YamlFile.CONFIG.get());
+
+		// Featherboard
+		if (Bukkit.getPluginManager().isPluginEnabled("FeatherBoard")) {
+			if (YamlFile.CONFIG.get().getBoolean("featherboard.enable")) {
+				this.featherBoard = YamlFile.CONFIG.get().getString("featherboard.board");
+			} else this.featherBoard = null;
+		} else this.featherBoard = null;
+
 		this.createQueues();
 		this.registerTasks();
 	}
@@ -84,7 +94,9 @@ public class Dungeons extends JavaPlugin {
 	}
 	
 	public void hookPlugins() {
-		
+		if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+			new DungeonPlaceholder().register();
+		}
 	}
 	
 	public void runTasks() {

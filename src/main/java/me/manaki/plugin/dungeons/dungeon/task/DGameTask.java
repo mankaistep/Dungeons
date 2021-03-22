@@ -54,6 +54,7 @@ public class DGameTask extends BukkitRunnable {
 	
 	public void setBossBar() {
 		BossBar bb = status.getBossBar();
+		if (bb == null) return;
 		Dungeon d = DDataUtils.getDungeon(dungeon);
 		int remain = d.getOption().getMaxTime() - new Long((System.currentTimeMillis() - start) / 1000).intValue();
 		bb.setTitle("§c§l" + d.getInfo().getName() + " §f§l" + Utils.getFormat(remain));

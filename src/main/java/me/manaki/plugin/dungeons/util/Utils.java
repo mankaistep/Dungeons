@@ -16,7 +16,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 public class Utils {
-	
+
+
 	public static Entity getNearest(Location l, double r, EntityType type) {
 		double min = Double.MAX_VALUE;
 		Entity entity = null;
@@ -113,10 +114,10 @@ public class Utils {
 		String s = "";
 		int minute = second / 60;
 		s = minute < 10 ? "0" + minute : minute + "";
-		s += ":";
+		s += " phút ";
 		
 		int du = second % 60;
-		s += du < 10 ? "0" + du : du + "";
+		s += du < 10 ? "0" + du : du + " giây";
 		return s;
 	}
 	

@@ -6,6 +6,7 @@ import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class DPlayer {
@@ -37,10 +38,12 @@ public class DPlayer {
 	public static DPlayer from(Player p) {
 		double dr = 0;
 		int rb = 0;
-		User user = LuckPermsProvider.get().getUserManager().getUser(p.getUniqueId());
-		for (Node node : Lists.newArrayList(user.getNodes())) {
-			if (node.getKey().contains(DROP_RATE_PERM)) dr = Math.max(dr, Double.valueOf(node.getKey().replace(DROP_RATE_PERM, ""))); 
-			if (node.getKey().contains(REVIVE_RATE_PERM)) rb = Math.max(rb, Integer.valueOf(node.getKey().replace(REVIVE_RATE_PERM, ""))); 
+		if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
+			User user = LuckPermsProvider.get().getUserManager().getUser(p.getUniqueId());
+			for (Node node : Lists.newArrayList(user.getNodes())) {
+				if (node.getKey().contains(DROP_RATE_PERM)) dr = Math.max(dr, Double.valueOf(node.getKey().replace(DROP_RATE_PERM, "")));
+				if (node.getKey().contains(REVIVE_RATE_PERM)) rb = Math.max(rb, Integer.valueOf(node.getKey().replace(REVIVE_RATE_PERM, "")));
+			}
 		}
 		return new DPlayer(dr, rb);
 	}
