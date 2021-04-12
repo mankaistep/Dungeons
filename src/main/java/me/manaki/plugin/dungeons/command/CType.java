@@ -125,7 +125,7 @@ public enum CType {
 				le.setMetadata("commandKilled", new FixedMetadataValue(Dungeons.get(), ""));
 				le.remove();
 			});
-			s.getTurnStatus().getGuarded().remove();
+			if (s.getTurnStatus().getGuarded() != null) s.getTurnStatus().getGuarded().remove();
 			player.getWorld().getEntities().forEach(entity -> {
 				if (entity instanceof Item) return;
 				if (MythicMobs.inst().getMobManager().getAllMythicEntities().contains(entity))  {

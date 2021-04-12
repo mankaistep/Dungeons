@@ -22,13 +22,15 @@ public class DMoneyCoinTask extends BukkitRunnable {
 	@Override
 	public void run() {
 		Bukkit.getOnlinePlayers().forEach(player -> {
-			player.getWorld().getNearbyEntitiesByType(Item.class, player.getLocation(), 0.5).forEach(i -> {
+			player.getWorld().getNearbyEntities(player.getLocation(), 0.5, 0.5, 0.5).forEach(i -> {
+				if (!(i instanceof Item)) return;
 				if (checked.contains(i)) return;
-				DMoneyCoin coin = DMoneyCoin.from(i);
+				var item = (Item) i;
+				DMoneyCoin coin = DMoneyCoin.from(item);
 				if (coin == null) return;
 				if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
 					MoneyAPI.giveMoney(player, coin.getValue());
-					player.sendActionBar("§f§l+" + coin.getValue() + "$");
+					player.sendMessage("§f§l+" + coin.getValue() + "$");
 				}
 				player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 				Bukkit.getScheduler().runTask(Dungeons.get(), () -> {

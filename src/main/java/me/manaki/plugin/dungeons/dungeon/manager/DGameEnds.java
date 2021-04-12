@@ -163,7 +163,7 @@ public class DGameEnds {
 	private static List<Player> inDungeonFilter(List<UUID> uuids, String id) {
 		Dungeon d = DDataUtils.getDungeon(id);
 		return uuids.stream()
-				.filter(uuid -> d.getInfo().getWorlds().contains(Bukkit.getPlayer(uuid).getWorld().getName()))
+				.filter(uuid -> Bukkit.getPlayer(uuid) != null && d.getInfo().getWorlds().contains(Bukkit.getPlayer(uuid).getWorld().getName()))
 				.map(Bukkit::getPlayer)
 				.collect(Collectors.toList());
 	}
