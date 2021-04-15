@@ -1,5 +1,6 @@
 package me.manaki.plugin.dungeons.v4.world;
 
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.util.Tasks;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -16,14 +17,14 @@ public class WorldLoader {
 
     private static final String PATH = "worlds";
 
-    private final Plugin plugin;
+    private final Dungeons plugin;
 
     private final Map<String, Integer> highestID;
     private final List<WorldCache> caches;
 
     private Set<String> isLoading;
 
-    public WorldLoader(Plugin plugin) {
+    public WorldLoader(Dungeons plugin) {
         this.plugin = plugin;
         this.highestID = new HashMap<>();
         this.caches = new ArrayList<>();

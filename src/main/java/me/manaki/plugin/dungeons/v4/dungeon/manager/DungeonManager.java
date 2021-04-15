@@ -97,6 +97,7 @@ public class DungeonManager {
             e.printStackTrace();
             return;
         }
+        plugin.getWorldManager().addActiveWorld(dungeonID, worldCache);
 
         // Wait to do
         WorldCache finalWorldCache = worldCache;
@@ -320,7 +321,8 @@ public class DungeonManager {
                         plugin.getWorldLoader().unload(Utils.getPlayerSpawn(), status.getCache().getWorldCache().toWorldName(), true);
                     });
 
-                    // Quit
+                    // Remove caches
+                    plugin.getWorldManager().removeActiveWorld(dungeonID, status.getCache().getWorldCache());
                     removeStatus(status);
                     this.cancel();
                     return;
