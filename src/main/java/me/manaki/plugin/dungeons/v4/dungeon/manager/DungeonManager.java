@@ -205,29 +205,35 @@ public class DungeonManager {
         });
 
         // Win commands
-        t.getCommand().getWins().forEach(cmd -> {
-            status.getPlayers().forEach(uuid -> {
-                Player player = Bukkit.getPlayer(uuid);
-                new Command(cmd).execute(player);
+        try {
+            t.getCommand().getWins().forEach(cmd -> {
+                status.getPlayers().forEach(uuid -> {
+                    Player player = Bukkit.getPlayer(uuid);
+                    new Command(cmd).execute(player);
+                });
             });
-        });
-
-        // Clear tasks
-        for (BukkitRunnable btask : status.getTasks()) {
-            if (btask instanceof DMobTask || btask instanceof DSlaveTask || btask instanceof DGuardedTask) {
-                btask.cancel();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            // Clear tasks
+            for (BukkitRunnable btask : status.getTasks()) {
+                if (btask instanceof DMobTask || btask instanceof DSlaveTask || btask instanceof DGuardedTask) {
+                    btask.cancel();
+                }
             }
-        }
 
-        // New status
-        status.setTurnStatus(new TStatus());
+            // New status
+            status.setTurnStatus(new TStatus());
 
-        // Check next
-        if (DGameUtils.isLastTurn(dungeonID, turn)) {
-            task.cancel();
-            win(dungeonCache);
+            // Check next
+            if (DGameUtils.isLastTurn(dungeonID, turn)) {
+                task.cancel();
+                win(dungeonCache);
+            }
+            else startNextTurn(dungeonCache);
         }
-        else startNextTurn(dungeonCache);
     }
 
     public void win(String dungeonCache) {
