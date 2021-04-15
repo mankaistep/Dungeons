@@ -8,12 +8,13 @@ import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.rank.Rank;
 import me.manaki.plugin.dungeons.rank.RankUtils;
 import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -51,13 +52,16 @@ public enum CType {
 	TELE {
 		@Override
 		public void execute(String cmd, Player player) {
-			String d = DPlayerUtils.getCurrentDungeon(player);
-			Dungeon dg = DDataUtils.getDungeon(d);
+			var cacheID = DPlayerUtils.getCurrentDungeonCache(player);
+			var status = Dungeons.get().getDungeonManager().getStatus(cacheID);
+			var dungeonID = status.getCache().getDungeonID();
+			var world = status.getCache().getWorldCache().toWorld();
+			Dungeon dg = DDataUtils.getDungeon(dungeonID);
 			DLocation dl = dg.getLocations().getOrDefault(cmd, null);
 			if (dl == null) {
 				player.sendMessage(Utils.c("&cLỗi location, thông báo quản trị viên để fix"));
 			}
-			DGameUtils.teleport(player, dl.getLocation());
+			DGameUtils.teleport(player, dl.getLocation(world));
 		}
 	},
 	MESS {
@@ -102,9 +106,10 @@ public enum CType {
 	SHOWRANK {
 		@Override
 		public void execute(String cmd, Player player) {
-			String id = DPlayerUtils.getCurrentDungeon(player);
-			DStatus status = DGameUtils.getStatus(id);
-			Rank r = RankUtils.getRank(id, status.getStatistic(player));
+			var cacheID = DPlayerUtils.getCurrentDungeonCache(player);
+			var status = Dungeons.get().getDungeonManager().getStatus(cacheID);
+			var dungeonID = status.getCache().getDungeonID();
+			Rank r = RankUtils.getRank(dungeonID, status.getStatistic(player));
 			RankUtils.showRank(player, r);
 		}
 	},
@@ -113,10 +118,8 @@ public enum CType {
 		public void execute(String cmd, Player player) {
 			List<String> kills = cmd.equals("*") ? null : Lists.newArrayList(cmd.split(";"));
 			DStatus s = DPlayerUtils.getStatus(player);
-			if (kills == null || (kills != null && kills.contains("slave"))) {
-				s.getTurnStatus().getSlaveToSaves().forEach(le -> {
-					le.remove();
-				});
+			if (kills == null || kills.contains("slave")) {
+				s.getTurnStatus().getSlaveToSaves().forEach(Entity::remove);
 			}
 			s.getTurnStatus().getMobToKills().forEach((le, id) -> {
 				if (kills != null) {

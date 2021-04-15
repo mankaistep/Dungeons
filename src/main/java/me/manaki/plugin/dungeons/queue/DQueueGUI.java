@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.ticket.Tickets;
 import me.manaki.plugin.dungeons.util.ItemStackUtils;
 import me.manaki.plugin.dungeons.util.Utils;

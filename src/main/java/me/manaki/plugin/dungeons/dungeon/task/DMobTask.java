@@ -11,7 +11,7 @@ import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.player.DPlayer;
 import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

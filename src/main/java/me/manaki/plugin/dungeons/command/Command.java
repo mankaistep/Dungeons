@@ -1,6 +1,6 @@
 package me.manaki.plugin.dungeons.command;
 
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

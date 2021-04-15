@@ -118,7 +118,7 @@ public enum DQueueStatus {
 			lore.addAll(Utils.toList(d.getInfo().getDesc(), 25, "§7§o"));
 			lore.add("");
 			lore.add("§2Trạng thái: §dĐang chiến đấu");
-			lore.add("§2Thời gian:  §f" + Utils.formatMinute(DGameUtils.getStatus(id).getAllStatistic().getTimeSurvived() * 1000));
+//			lore.add("§2Thời gian:  §f" + Utils.formatMinute(DGameUtils.getStatus(id).getAllStatistic().getTimeSurvived() * 1000));
 
 			ItemStackUtils.setLore(item, lore);
 

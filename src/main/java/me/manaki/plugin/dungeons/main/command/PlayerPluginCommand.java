@@ -1,9 +1,9 @@
 package me.manaki.plugin.dungeons.main.command;
 
-import me.manaki.plugin.dungeons.dungeon.manager.DGamePlays;
+import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import me.manaki.plugin.dungeons.queue.DQueueGUI;
 import me.manaki.plugin.dungeons.votekick.KickVotes;
-import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,6 +14,11 @@ import java.util.UUID;
 
 public class PlayerPluginCommand implements CommandExecutor {
 
+	private Dungeons plugin;
+
+	public PlayerPluginCommand(Dungeons plugin) {
+		this.plugin = plugin;
+	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command var2, String var3, String[] args) {
 		
@@ -21,7 +26,7 @@ public class PlayerPluginCommand implements CommandExecutor {
 		
 		if (args.length > 0) {
 			if (args[0].equalsIgnoreCase("thoat")) {
-				DGamePlays.kick(player, true);
+				plugin.getDungeonManager().kick(player, true);
 			}
 			else if (args[0].equalsIgnoreCase("votekick")) {
 				if (args.length <= 1) {
@@ -43,13 +48,13 @@ public class PlayerPluginCommand implements CommandExecutor {
 					sender.sendMessage("§cBạn có ở trong phó bản đâu?");
 					return false;
 				}
-				String id = DPlayerUtils.getCurrentDungeon(player);
-				if (!DPlayerUtils.isInDungeon(target, id)) {
+				String cacheID = Dungeons.get().getDungeonManager().getCurrentDungeonCache(player);
+				if (!DPlayerUtils.isInDungeon(target, cacheID)) {
 					sender.sendMessage("§cĐối phương không cùng phó bản với bạn");
 					return false;
 				}
 				UUID uuid = target.getUniqueId();
-				KickVotes.voteKick(id, uuid, player.getUniqueId());
+				KickVotes.voteKick(DPlayerUtils.getCurrentDungeonCache(player), uuid, player.getUniqueId());
 			}
 		}
 		

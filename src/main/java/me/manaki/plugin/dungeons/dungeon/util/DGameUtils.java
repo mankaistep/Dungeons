@@ -1,5 +1,6 @@
 package me.manaki.plugin.dungeons.dungeon.util;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.location.DLocation;
@@ -8,8 +9,9 @@ import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.turn.TSMob;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.rank.RankUtils;
+import me.manaki.plugin.dungeons.util.Utils;
 import net.minecraft.server.v1_16_R3.BlockPosition;
 import net.minecraft.server.v1_16_R3.Blocks;
 import net.minecraft.server.v1_16_R3.PacketPlayOutBlockAction;
@@ -22,37 +24,29 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 public class DGameUtils {
-	
-	private static Map<String, DStatus> statuses = Maps.newHashMap();
-	
+
+
 	public static boolean isPlaying(String id) {
-		return statuses.containsKey(id);
+		var plugin = Dungeons.get();
+		for (DStatus status : plugin.getDungeonManager().getStatuses()) {
+			if (status.getCache().getDungeonID().equalsIgnoreCase(id)) return true;
+		}
+		return false;
 	}
 	
 	public static boolean canStart(String id) {
 		return !isPlaying(id);
 	}
 	
-	public static Set<String> getOnlineDungeons() {
-		return statuses.keySet();
-	}
-	
-	public static DStatus getStatus(String id) {
-		return statuses.getOrDefault(id, null);
-	}
-	
-	public static void setStatus(String id, DStatus status) {
-		statuses.put(id, status);
-	}
-	
-	public static void removeStatus(String id) {
-		statuses.remove(id);
-	}
+//	public static Set<String> getOnlineDungeons() {
+//		return statuses.keySet();
+//	}
 	
 	public static boolean isLastTurn(String id, int turn) {
 		return turn == DDataUtils.getDungeon(id).getTurns().size();
@@ -72,26 +66,19 @@ public class DGameUtils {
 		if (e instanceof LivingEntity || e instanceof Item) e.remove();
 	}
 	
-	public static void broadcast(String id, String mess) {
-		DStatus status = getStatus(id);
-		status.getPlayers().forEach(uuid -> {
-			Player p = Bukkit.getPlayer(uuid);
-			p.sendMessage(mess);
-		});
-	}
-	
-	public static Location getCheckpoint(String id, int priority) {
-		Dungeon d = DDataUtils.getDungeon(id);
-		return d.getLocation(d.getCheckPoints().get(priority - 1)).getLocation();
-	}
+//	public static void broadcast(String id, String mess) {
+//		DStatus status = getStatus(id);
+//		status.getPlayers().forEach(uuid -> {
+//			Player p = Bukkit.getPlayer(uuid);
+//			p.sendMessage(mess);
+//		});
+//	}
 	
 	public static String getStandingCheckpoint(String id, Location l) {
 		Dungeon d = DDataUtils.getDungeon(id);
 		for (String cp : d.getCheckPoints()) {
 			DLocation check = d.getLocation(cp);
-			if (check.getLocation().getWorld() == l.getWorld()) {
-				if (check.getLocation().distance(l) <= check.getRadius()) return cp;
-			}
+			if (Utils.distance(check, l) <= check.getRadius()) return cp;
 		}
 		return null;
 	}
@@ -168,7 +155,7 @@ public class DGameUtils {
 	public static String checkLocation(String id, Location l) {
 		Dungeon d = DDataUtils.getDungeon(id);
 		for (Entry<String, DLocation> dl : d.getLocations().entrySet()) {
-			if (dl.getValue().getLocation().getWorld() == l.getWorld() && dl.getValue().getLocation().getBlock().getLocation().equals(l.getBlock().getLocation())) {
+			if (dl.getValue().getLocation(l.getWorld()).getWorld() == l.getWorld() && dl.getValue().getLocation(l.getWorld()).getBlock().getLocation().equals(l.getBlock().getLocation())) {
 				return dl.getKey();
 			}
 		}

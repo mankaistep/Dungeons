@@ -14,6 +14,7 @@ import me.manaki.plugin.dungeons.dungeon.block.DBlock;
 import me.manaki.plugin.dungeons.dungeon.rewardreq.DRewardReq;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -22,6 +23,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Dungeon extends Configable {
+
+	private String id;
 
 	private DInfo info;
 	private DOption option;
@@ -35,7 +38,8 @@ public class Dungeon extends Configable {
 	private List<DTurn> turns;
 	private List<String> checkPoints;
 	
-	public Dungeon(DInfo info, DOption option, DRule rule, List<String> rewards, Map<String, DLocation> locs, Map<String, DBlock> blocks, List<DMoneyDrop> moneyDrops, List<DDrop> drops, DRewardReq rewardReq, List<DTurn> turns, List<String> checkPoints) {
+	public Dungeon(String id, DInfo info, DOption option, DRule rule, List<String> rewards, Map<String, DLocation> locs, Map<String, DBlock> blocks, List<DMoneyDrop> moneyDrops, List<DDrop> drops, DRewardReq rewardReq, List<DTurn> turns, List<String> checkPoints) {
+		this.id = id;
 		this.info = info;
 		this.option = option;
 		this.rule = rule;
@@ -49,10 +53,15 @@ public class Dungeon extends Configable {
 		this.rewards = rewards;
 	}
 	
-	public Dungeon(FileConfiguration config, String path) {
+	public Dungeon(String id, FileConfiguration config, String path) {
 		super(config, path);
+		this.id = id;
 	}
-	
+
+	public String getID() {
+		return this.id;
+	}
+
 	public DInfo getInfo() {
 		return this.info;
 	}

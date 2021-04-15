@@ -1,38 +1,38 @@
 package me.manaki.plugin.dungeons.listener;
 
+import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.player.DPlayer;
-import me.manaki.plugin.dungeons.dungeon.status.DStatus;
+import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.turn.TChest;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
-import me.manaki.plugin.dungeons.main.Dungeons;
-import me.manaki.plugin.dungeons.rank.Rank;
-import me.manaki.plugin.dungeons.dungeon.Dungeon;
-import me.manaki.plugin.dungeons.dungeon.manager.DGamePlays;
-import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
+import me.manaki.plugin.dungeons.rank.Rank;
 import me.manaki.plugin.dungeons.rank.RankUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
 public class DungeonListener implements Listener {
-	
+
+	private final Dungeons plugin;
+
+	public DungeonListener(Dungeons plugin) {
+		this.plugin = plugin;
+	}
+
 	/*
 	 * Player open chest
 	 */
@@ -41,18 +41,21 @@ public class DungeonListener implements Listener {
 		Player player = e.getPlayer();
 		if (!DPlayerUtils.isInDungeonWorld(player)) return;
 		
-		String id = DPlayerUtils.getDungeonPlayerStandingOn(player);
-		if (id == null) return;
-		if (!DGameUtils.isPlaying(id)) return;
+		String dungeonCache = DPlayerUtils.getDungeonCachePlayerStandingOn(player);
+		if (dungeonCache == null) return;
 
-		Dungeon d = DDataUtils.getDungeon(id);
-		DStatus status = DGameUtils.getStatus(id);
+		var status = plugin.getDungeonManager().getStatus(dungeonCache);
+		var dungeonID = status.getCache().getDungeonID();
+
+		if (!DGameUtils.isPlaying(dungeonID)) return;
+		Dungeon d = DDataUtils.getDungeon(dungeonID);
+
 		for (DTurn turn : d.getTurns()) {
 			Block b = e.getClickedBlock();
-			Rank rank = RankUtils.getRank(id, status.getStatistic(player));
+			Rank rank = RankUtils.getRank(dungeonID, status.getStatistic(player));
 			if (b != null && b.getType() == Material.CHEST) {
 				Location l = b.getLocation();
-				String lid = DGameUtils.checkLocation(id, l);
+				String lid = DGameUtils.checkLocation(dungeonID, l);
 				if (lid == null) return;
 				if (turn.getChest(lid) == null) return;
 				
@@ -80,16 +83,20 @@ public class DungeonListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerRespawn(PlayerRespawnEvent e) {
 		Player player = e.getPlayer();
-		String id = DPlayerUtils.getCurrentDungeon(player);
-		if (id == null) return;
-		DStatus status = DGameUtils.getStatus(id);
+
+		String dungeonCache = DPlayerUtils.getDungeonCachePlayerStandingOn(player);
+		if (dungeonCache == null) return;
+		var status = plugin.getDungeonManager().getStatus(dungeonCache);
+		var dungeonID = status.getCache().getDungeonID();
+		var world = status.getCache().getWorldCache().toWorld();
+
 		DStatistic s = status.getStatistic(player);
-		Dungeon d = DDataUtils.getDungeon(id);
+		Dungeon d = DDataUtils.getDungeon(dungeonID);
 		
-		int maxdead = DPlayer.from(player).getMaxDead(id);
-		if (s.getDead() < maxdead) {
-			DGamePlays.dead(player, false);
-			e.setRespawnLocation(d.getLocation(status.getCheckpoint()).getLocation());
+		int maxdead = DPlayer.from(player).getMaxDead(dungeonID);
+		if (s.getDead() < maxdead) { ;
+			plugin.getDungeonManager().dead(player, false);
+			e.setRespawnLocation(d.getLocation(status.getCheckpoint()).getLocation(world));
 		}
 	}
 	
@@ -101,8 +108,12 @@ public class DungeonListener implements Listener {
 		if (e.getDamager() instanceof Player && e.getEntity() instanceof Player) {
 			Player da = (Player) e.getDamager();
 			Player en = (Player) e.getEntity();
-			if (DPlayerUtils.getCurrentDungeon(da) == null || DPlayerUtils.getCurrentDungeon(en) == null) return;
-			if (DPlayerUtils.getCurrentDungeon(da).equals(DPlayerUtils.getCurrentDungeon(en))) e.setCancelled(true);
+
+			String dc1 = DPlayerUtils.getCurrentDungeonCache(da);
+			String dc2 = DPlayerUtils.getCurrentDungeonCache(en);
+
+			if (dc1 == null || dc2 == null) return;
+			if (dc1.equals(dc2)) e.setCancelled(true);
 		}
 	}
 	
@@ -110,50 +121,50 @@ public class DungeonListener implements Listener {
 	 * Cancel break/build block
 	 */
 	
-	@EventHandler
-	public void onBreak(BlockBreakEvent e) {
-		DDataUtils.getDungeons().values().forEach(dungeon -> {
-			dungeon.getInfo().getWorlds().forEach(w -> {
-				World world = Bukkit.getWorld(w);
-				if (world == null) return;
-				if (e.getBlock().getWorld() != world) return;
-				Player player = e.getPlayer();
-				if (!player.hasPermission("dungeon3.build")) {
-					player.sendMessage("§cBạn không thể phá block");
-					e.setCancelled(true);
-				}
-			});
-		});
-	}
+//	@EventHandler
+//	public void onBreak(BlockBreakEvent e) {
+//		DDataUtils.getDungeons().values().forEach(dungeon -> {
+//			dungeon.getInfo().getWorlds().forEach(w -> {
+//				World world = Bukkit.getWorld(w);
+//				if (world == null) return;
+//				if (e.getBlock().getWorld() != world) return;
+//				Player player = e.getPlayer();
+//				if (!player.hasPermission("dungeon3.build")) {
+//					player.sendMessage("§cBạn không thể phá block");
+//					e.setCancelled(true);
+//				}
+//			});
+//		});
+//	}
 	
-	@EventHandler
-	public void onBreak(BlockPlaceEvent e) {
-		DDataUtils.getDungeons().values().forEach(dungeon -> {
-			dungeon.getInfo().getWorlds().forEach(w -> {
-				World world = Bukkit.getWorld(w);
-				if (world == null) return;
-				if (e.getBlock().getWorld() != world) return;
-				Player player = e.getPlayer();
-				if (!player.hasPermission("dungeon3.build")) {
-					player.sendMessage("§cBạn không thể đặt block");
-					e.setCancelled(true);
-				}
-			});
-		});
-	}
+//	@EventHandler
+//	public void onBreak(BlockPlaceEvent e) {
+//		DDataUtils.getDungeons().values().forEach(dungeon -> {
+//			dungeon.getInfo().getWorlds().forEach(w -> {
+//				World world = Bukkit.getWorld(w);
+//				if (world == null) return;
+//				if (e.getBlock().getWorld() != world) return;
+//				Player player = e.getPlayer();
+//				if (!player.hasPermission("dungeon3.build")) {
+//					player.sendMessage("§cBạn không thể đặt block");
+//					e.setCancelled(true);
+//				}
+//			});
+//		});
+//	}
 	
 	// Remove blocks of explosion
-	@EventHandler
-	public void onExplode(EntityExplodeEvent e) {
-		DDataUtils.getDungeons().values().forEach(dungeon -> {
-			dungeon.getInfo().getWorlds().forEach(w -> {
-				World world = Bukkit.getWorld(w);
-				if (world == null) return;
-				if (e.getEntity().getWorld() != world) return;
-				e.blockList().clear();
-			});
-		});
-	}
+//	@EventHandler
+//	public void onExplode(EntityExplodeEvent e) {
+//		DDataUtils.getDungeons().values().forEach(dungeon -> {
+//			dungeon.getInfo().getWorlds().forEach(w -> {
+//				World world = Bukkit.getWorld(w);
+//				if (world == null) return;
+//				if (e.getEntity().getWorld() != world) return;
+//				e.blockList().clear();
+//			});
+//		});
+//	}
 	
 	/*
 	 *  Load on first join

@@ -12,6 +12,15 @@
 # [showrank]
 # Rank: S, A, B, C, D, F
 
+world:
+  world_template_1:
+    # NORMAL/NETHER/THE_END
+    environment: NORMAL
+    # Can add if u need those behind
+    #type: NORMAL
+    #seed: 0
+    #generator: something
+
 featherboard:
   enable: true
   board: dungeon
@@ -85,15 +94,12 @@ guarded:
    health: 30
    target-radius: 10
 
-
 dungeon:
   d1:
     info:
       name: Đảo xanh
       desc: Dungeon cơ bản dành cho người mới bắt đầu
-      worlds:
-      - world_dungeon_1
-      - world_dungeon_1_1
+      world: world_dungeon_1
     option:
       max-time: 3600
       player: '1:5'

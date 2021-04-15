@@ -1,26 +1,29 @@
-package me.manaki.plugin.dungeons.main;
+package me.manaki.plugin.dungeons;
 
-import jdk.dynalink.linker.support.Guards;
 import me.manaki.plugin.dungeons.buff.Buff;
+import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
-import me.manaki.plugin.dungeons.guarded.Guardeds;
-import me.manaki.plugin.dungeons.listener.EntityListener;
-import me.manaki.plugin.dungeons.placeholder.DungeonPlaceholder;
-import me.manaki.plugin.dungeons.queue.DQueueTask;
-import me.manaki.plugin.dungeons.yaml.YamlFile;
-import me.manaki.plugin.dungeons.dungeon.manager.DGameEnds;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
+import me.manaki.plugin.dungeons.guarded.Guardeds;
 import me.manaki.plugin.dungeons.lang.Lang;
 import me.manaki.plugin.dungeons.listener.DungeonListener;
+import me.manaki.plugin.dungeons.listener.EntityListener;
 import me.manaki.plugin.dungeons.listener.GUIListener;
 import me.manaki.plugin.dungeons.listener.PlayerListener;
 import me.manaki.plugin.dungeons.main.command.AdminPluginCommand;
 import me.manaki.plugin.dungeons.main.command.PlayerPluginCommand;
+import me.manaki.plugin.dungeons.placeholder.DungeonPlaceholder;
+import me.manaki.plugin.dungeons.queue.DQueueTask;
 import me.manaki.plugin.dungeons.queue.DQueues;
 import me.manaki.plugin.dungeons.rank.Rank;
 import me.manaki.plugin.dungeons.slave.Slaves;
 import me.manaki.plugin.dungeons.task.DMoneyCoinTask;
 import me.manaki.plugin.dungeons.ticket.Tickets;
+import me.manaki.plugin.dungeons.v4.config.V4Config;
+import me.manaki.plugin.dungeons.v4.dungeon.manager.DungeonManager;
+import me.manaki.plugin.dungeons.v4.world.WorldLoader;
+import me.manaki.plugin.dungeons.v4.world.WorldManager;
+import me.manaki.plugin.dungeons.yaml.YamlFile;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -29,20 +32,33 @@ public class Dungeons extends JavaPlugin {
 	public boolean loaded = false;
 	public String featherBoard = null;
 
+	private V4Config v4Config;
+	private WorldLoader worldLoader;
+	private WorldManager worldManager;
+	private DungeonManager dungeonManager;
+
 	@Override
 	public void onEnable() {
 		this.registerCommands();
 		this.registerListeners();
 		this.hookPlugins();
 		this.runTasks();
+
+		// V4
+		this.v4Config = new V4Config(this);
+		this.worldLoader = new WorldLoader(this);
+		this.worldManager = new WorldManager(this);
+		this.dungeonManager = new DungeonManager(this);
+
 		if (Bukkit.getOnlinePlayers().size() > 0) this.reloadConfig();
 	}
 	
 	@Override
 	public void onDisable() {
-		DDataUtils.getDungeons().keySet().forEach(id -> {
-			if (DGameUtils.isPlaying(id)) DGameEnds.loseDungeon(id);
-		});
+		// Quit dungeons
+		for (DStatus status : this.getDungeonManager().getStatuses()) {
+			this.getDungeonManager().lose(status.getCache().toID());
+		}
 	}
 	
 	@Override
@@ -57,6 +73,7 @@ public class Dungeons extends JavaPlugin {
 		Tickets.init(YamlFile.CONFIG.get());
 		Slaves.reload(YamlFile.CONFIG.get());
 		Guardeds.reload(YamlFile.CONFIG.get());
+		this.v4Config.reload();
 
 		// Featherboard
 		if (Bukkit.getPluginManager().isPluginEnabled("FeatherBoard")) {
@@ -70,14 +87,14 @@ public class Dungeons extends JavaPlugin {
 	}
 	
 	public void registerCommands() {
-		this.getCommand("dungeon").setExecutor(new PlayerPluginCommand());
-		this.getCommand("dungeons").setExecutor(new AdminPluginCommand());
+		this.getCommand("dungeon").setExecutor(new PlayerPluginCommand(this));
+		this.getCommand("dungeons").setExecutor(new AdminPluginCommand(this));
 	}
 	
 	public void registerListeners() {
-		Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
-		Bukkit.getPluginManager().registerEvents(new EntityListener(), this);
-		Bukkit.getPluginManager().registerEvents(new DungeonListener(), this);
+		Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
+		Bukkit.getPluginManager().registerEvents(new EntityListener(this), this);
+		Bukkit.getPluginManager().registerEvents(new DungeonListener(this), this);
 		Bukkit.getPluginManager().registerEvents(new GUIListener(), this);
 	}
 	
@@ -102,7 +119,23 @@ public class Dungeons extends JavaPlugin {
 	public void runTasks() {
 		DMoneyCoinTask.start();
 	}
-	
+
+	public V4Config getV4Config() {
+		return v4Config;
+	}
+
+	public WorldLoader getWorldLoader() {
+		return worldLoader;
+	}
+
+	public WorldManager getWorldManager() {
+		return worldManager;
+	}
+
+	public DungeonManager getDungeonManager() {
+		return dungeonManager;
+	}
+
 	public static Dungeons getPlugin() {
 		return (Dungeons) Bukkit.getPluginManager().getPlugin("Dungeons");
 	}

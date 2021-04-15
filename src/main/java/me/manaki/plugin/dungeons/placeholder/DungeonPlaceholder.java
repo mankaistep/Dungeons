@@ -1,6 +1,7 @@
 package me.manaki.plugin.dungeons.placeholder;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.player.DPlayer;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
@@ -52,9 +53,11 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
     @Override
     public String onPlaceholderRequest(Player player, String s){
         if (!DPlayerUtils.isInDungeon(player)) return "DUNGEON NULL";
-        String id = DPlayerUtils.getCurrentDungeon(player);
-        Dungeon d = Dungeon.get(id);
-        DStatus status = DGameUtils.getStatus(id);
+        String dungeonCache = DPlayerUtils.getCurrentDungeonCache(player);
+
+        var status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
+        var dungeonID = status.getCache().getDungeonID();
+        Dungeon d = Dungeon.get(dungeonID);
         DTurn turn = d.getTurn(status.getTurn());
 
         String o = turn.getObjective();

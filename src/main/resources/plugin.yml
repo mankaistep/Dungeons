@@ -2,7 +2,7 @@ name: Dungeons
 author: MankaiStep
 version: 1.0
 load: POSTWORLD
-main: me.manaki.plugin.dungeons.main.Dungeons
+main: me.manaki.plugin.dungeons.Dungeons
 depend: [MythicMobs, EssentialsSpawn]
 softdepend: [Shops, Vault, FeatherBoard, PlaceholderAPI]
 api-version: 1.16

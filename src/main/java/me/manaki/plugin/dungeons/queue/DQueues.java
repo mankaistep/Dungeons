@@ -1,16 +1,17 @@
 package me.manaki.plugin.dungeons.queue;
 
 import com.google.common.collect.Maps;
-import me.manaki.plugin.dungeons.dungeon.manager.DGameStarts;
+import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
-import me.manaki.plugin.dungeons.main.Dungeons;
-import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.ticket.Tickets;
+import me.manaki.plugin.dungeons.util.Tasks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -149,8 +150,8 @@ public class DQueues {
 		ids.forEach(id -> {
 			if (canStart(id)) {
 				// Start
-				Bukkit.getScheduler().runTask(Dungeons.get(), () -> {
-					DGameStarts.startDungeon(id, getQueue(id).getPlayers());
+				Tasks.async(() -> {
+					Dungeons.get().getDungeonManager().start(id, getQueue(id).getPlayers());
 					doStart(id);
 				});
 			}
@@ -170,7 +171,7 @@ public class DQueues {
 		});
 		
 		// Delay dungeon
-		dungeonCooldown.put(id, System.currentTimeMillis() + DDataUtils.getDungeon(id).getOption().getCooldown() * 1000);
+		dungeonCooldown.put(id, System.currentTimeMillis() + DDataUtils.getDungeon(id).getOption().getCooldown() * 1000L);
 		
 		// Remove others
 		joins.remove(id);

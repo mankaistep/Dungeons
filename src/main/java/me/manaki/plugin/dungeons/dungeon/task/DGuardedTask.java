@@ -1,14 +1,13 @@
 package me.manaki.plugin.dungeons.dungeon.task;
 
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
-import me.manaki.plugin.dungeons.dungeon.manager.DGameEnds;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.guarded.Guarded;
 import me.manaki.plugin.dungeons.guarded.Guardeds;
 import me.manaki.plugin.dungeons.lang.Lang;
-import me.manaki.plugin.dungeons.main.Dungeons;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -20,7 +19,9 @@ public class DGuardedTask extends BukkitRunnable {
 
     private final long LOOK_COOLDOWN = 5000;
 
-    private String dungeonID;
+    private final Dungeons plugin;
+
+    private String dungeonCache;
     private String id;
     private Villager entity;
     private Location location;
@@ -29,13 +30,14 @@ public class DGuardedTask extends BukkitRunnable {
 
     private long lastLook;
 
-    public DGuardedTask(String id, String dungeonID, Location location, DStatus status) {
-        this.dungeonID = dungeonID;
+    public DGuardedTask(String id, String dungeonCache, Location location, DStatus status) {
+        this.dungeonCache = dungeonCache;
         this.id = id;
         this.location = location;
         this.status = status;
         this.isSpawned = false;
         this.runTaskTimer(Dungeons.get(), 0, 5);
+        this.plugin = Dungeons.get();
     }
 
     @Override
@@ -97,7 +99,7 @@ public class DGuardedTask extends BukkitRunnable {
         entity.setMetadata("Dungeon3", new FixedMetadataValue(Dungeons.get(), ""));
         entity.setMetadata("Guarded", new FixedMetadataValue(Dungeons.get(), ""));
 
-        Dungeon d = DDataUtils.getDungeon(dungeonID);
+        Dungeon d = DDataUtils.getDungeon(dungeonCache);
         if (d.getOption().isMobGlow()) entity.setGlowing(true);
     }
 
@@ -106,11 +108,11 @@ public class DGuardedTask extends BukkitRunnable {
         if (!isSpawned) return;
         if (!entity.isValid()) {
             // Check Lose Req
-            Dungeon d = DDataUtils.getDungeon(this.dungeonID);
+            Dungeon d = DDataUtils.getDungeon(this.dungeonCache);
             DTurn turn = d.getTurn(status.getTurn());
             if (turn.getLoseRequirement().getGuardedKilled().equalsIgnoreCase(this.id)) {
                 // Lose turn
-                DGameEnds.loseTurn(this.dungeonID, status.getTurn());
+                plugin.getDungeonManager().lose(dungeonCache);
                 Lang.DUNGEON_LOSE_GUARDED_DEATH.broadcast("%dungeon%", d.getInfo().getName());;
             }
 

@@ -2,6 +2,7 @@ package me.manaki.plugin.dungeons.util;
 
 import com.earth2me.essentials.spawn.EssentialsSpawn;
 import com.google.common.collect.Lists;
+import me.manaki.plugin.dungeons.dungeon.location.DLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
@@ -181,6 +182,13 @@ public class Utils {
 			log = log.replace(e.getKey(), e.getValue());
 		}
 		log(log);
+	}
+
+	public static double distance(DLocation dl, Location l) {
+		var dx = dl.getX() - l.getX();
+		var dy = dl.getY() - l.getY();
+		var dz = dl.getZ() - l.getZ();
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
 	}
 	
 }

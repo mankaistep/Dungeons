@@ -2,15 +2,12 @@ package me.manaki.plugin.dungeons.main.command;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import me.manaki.plugin.dungeons.dungeon.manager.DGameStarts;
+import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.moneycoin.DMoneyCoin;
 import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
-import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
-import me.manaki.plugin.dungeons.main.Dungeons;
-import me.manaki.plugin.dungeons.dungeon.Dungeon;
-import me.manaki.plugin.dungeons.dungeon.location.DLocation;
-import me.manaki.plugin.dungeons.dungeon.manager.DGameEnds;
 import me.manaki.plugin.dungeons.dungeon.turn.TSMob;
+import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import me.manaki.plugin.dungeons.queue.DQueues;
@@ -32,6 +29,12 @@ import java.util.List;
 import java.util.UUID;
 
 public class AdminPluginCommand implements CommandExecutor {
+
+	private Dungeons plugin;
+
+	public AdminPluginCommand(Dungeons plugin) {
+		this.plugin = plugin;
+	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String var3, String[] args) {
@@ -59,9 +62,9 @@ public class AdminPluginCommand implements CommandExecutor {
 						DQueues.remove(id);
 					}
 					if (DGameUtils.isPlaying(id)) {
-						DGameEnds.loseDungeon(id);
+						plugin.getDungeonManager().lose(id);
 					}
-					DGameStarts.startDungeon(id, list);
+					plugin.getDungeonManager().start(id, list);
 					DQueues.doStart(id);
 				}
 			}
@@ -69,7 +72,7 @@ public class AdminPluginCommand implements CommandExecutor {
 			else if (args[0].equalsIgnoreCase("setlocation")) {
 				Player player = (Player) sender;
 				String dungeon = args[1];
-				int radius = Integer.valueOf(args[2]);
+				int radius = Integer.parseInt(args[2]);
 				String id = args[3];
 				
 				Dungeon d = DDataUtils.getDungeon(dungeon);
@@ -90,18 +93,6 @@ public class AdminPluginCommand implements CommandExecutor {
 				DDataUtils.saveAll();
 				
 				sender.sendMessage(ChatColor.GREEN + "Set block type " + b.getType() + " you are looking at id " + id);
-			}
-			
-			else if (args[0].equalsIgnoreCase("tp")) {
-				Player player = (Player) sender;
-				String dungeon = args[1];
-				Dungeon dg = DDataUtils.getDungeon(dungeon);
-				DLocation dl = dg.getLocations().getOrDefault(cmd, null);
-				if (dl == null) {
-					player.sendMessage(Utils.c("&cWrong location ID"));
-					return false;
-				}
-				player.teleport(dl.getLocation());
 			}
 			
 			else if (args[0].equalsIgnoreCase("count")) {

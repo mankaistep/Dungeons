@@ -1,6 +1,6 @@
 package me.manaki.plugin.dungeons.dungeon.util;
 
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.lang.Lang;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;

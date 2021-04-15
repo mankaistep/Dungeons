@@ -1,7 +1,7 @@
 package me.manaki.plugin.dungeons.guarded;
 
 import com.google.common.collect.Maps;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;

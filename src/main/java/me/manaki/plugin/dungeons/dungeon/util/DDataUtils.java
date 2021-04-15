@@ -8,7 +8,7 @@ import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.drop.DDrop;
 import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.turn.TSMob;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.slave.Slaves;
 import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.Bukkit;
@@ -32,12 +32,13 @@ public class DDataUtils {
 				String id = file.getName().replace(".yml", "");
 				String path = "";
 				FileConfiguration dc = YamlConfiguration.loadConfiguration(file);
-				dungeons.put(id, new Dungeon(dc, path));
+				var d = new Dungeon(id, dc, path);
+				dungeons.put(id, d);
 			}
 		}
 		else config.getConfigurationSection("dungeon").getKeys(false).forEach(id -> {
 			String path = "dungeon." + id;
-			dungeons.put(id, new Dungeon(config, path));
+			dungeons.put(id, new Dungeon(id, config, path));
 		});
 		if (config.contains("dungeon")) {
 			config.set("dungeon", null);

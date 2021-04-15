@@ -1,9 +1,12 @@
 package me.manaki.plugin.dungeons.dungeon.status;
 
+import be.maximvdw.featherboard.W;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.turn.status.TStatus;
+import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.v4.dungeon.cache.DungeonCache;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
@@ -27,8 +30,12 @@ public class DStatus {
 	private boolean isPlaying;	
 	private String checkPoint;
 	private Map<UUID, List<String>> openedChests;
+
+	// V4
+	private DungeonCache cache;
 	
-	public DStatus(long start, List<UUID> players, BossBar bossbar) {
+	public DStatus(DungeonCache cache, long start, List<UUID> players, BossBar bossbar) {
+		this.cache = cache;
 		this.start = start;
 		this.starters = players;
 		this.players = players;
@@ -42,8 +49,13 @@ public class DStatus {
 		this.tasks = Lists.newArrayList();
 		this.isPlaying = true;
 		this.openedChests = Maps.newHashMap();
+		this.checkPoint = DDataUtils.getDungeon(cache.getDungeonID()).getCheckPoints().get(0);
 	}
-	
+
+	public DungeonCache getCache() {
+		return cache;
+	}
+
 	public Map<UUID, List<String>> getOpenedChests() {
 		return this.openedChests;
 	}
