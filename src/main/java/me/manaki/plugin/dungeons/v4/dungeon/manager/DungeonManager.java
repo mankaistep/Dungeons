@@ -444,10 +444,9 @@ public class DungeonManager {
     }
 
     public void featherBoardCheck(Player player, boolean isDefault) {
+        if (plugin.featherBoard == null) return;
         if (isDefault) FeatherBoardAPI.resetDefaultScoreboard(player);
-        else if (Dungeons.get().featherBoard != null) {
-            FeatherBoardAPI.showScoreboard(player, Dungeons.get().featherBoard);
-        }
+        else FeatherBoardAPI.showScoreboard(player, Dungeons.get().featherBoard);
     }
 
     public List<Player> inDungeonFilter(List<UUID> uuids, String id) {
