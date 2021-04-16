@@ -14,6 +14,7 @@ import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,26 +23,26 @@ import java.util.stream.Collectors;
 
 public class DDataUtils {
 	
-	private static Map<String, Dungeon> dungeons = Maps.newHashMap();
+	private static final Map<String, Dungeon> dungeons = Maps.newHashMap();
 
 	public static void loadAll(FileConfiguration config) {
-		dungeons = Maps.newHashMap();
+		dungeons.clear();
 		File folder = new File(Dungeons.get().getDataFolder(), "dungeons");
-		if (folder.exists()) {
-			for (File file : folder.listFiles()) {
-				String id = file.getName().replace(".yml", "");
-				String path = "";
-				FileConfiguration dc = YamlConfiguration.loadConfiguration(file);
-				dungeons.put(id, new Dungeon(dc, path));
+		if (!folder.exists()) {
+			folder.mkdirs();
+			var is = Dungeons.get().getResource("d1.yml");
+			var file = new File(Dungeons.get().getDataFolder() + "//dungeons", "d1.yml");
+			try {
+				FileUtils.copyInputStreamToFile(is, file);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
-		else config.getConfigurationSection("dungeon").getKeys(false).forEach(id -> {
-			String path = "dungeon." + id;
-			dungeons.put(id, new Dungeon(config, path));
-		});
-		if (config.contains("dungeon")) {
-			config.set("dungeon", null);
-			YamlFile.CONFIG.save(Dungeons.get());
+		for (File file : folder.listFiles()) {
+			String id = file.getName().replace(".yml", "");
+			String path = "";
+			FileConfiguration dc = YamlConfiguration.loadConfiguration(file);
+			dungeons.put(id, new Dungeon(dc, path));
 		}
 	}
 	

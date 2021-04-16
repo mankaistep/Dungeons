@@ -7,6 +7,7 @@ import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.util.ItemStackUtils;
 import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.DyeColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -27,8 +28,8 @@ public enum DQueueStatus {
 			List<String> lore = Lists.newArrayList();
 			lore.addAll(Utils.toList(d.getInfo().getDesc(), 25, "§7§o"));
 			lore.add("");
-			lore.add("§2Người chơi: §f" + q.getPlayers().size() + "/" + q.getMax());
-			lore.add("§2Trạng thái: §aCó thể vào");
+			lore.add("§3Người chơi: §f" + q.getPlayers().size() + "/" + q.getMax());
+			lore.add("§3Trạng thái: §fCó thể vào");
 
 			ItemStackUtils.setLore(item, lore);
 
@@ -50,10 +51,10 @@ public enum DQueueStatus {
 			List<String> lore = Lists.newArrayList();
 			lore.addAll(Utils.toList(d.getInfo().getDesc(), 25, "§7§o"));
 			lore.add("");
-			lore.add("§2Trạng thái: §cKhông thể vào");
-			lore.add("§2Yêu cầu: ");
-			lore.add("§6  Cấp độ: §e" + d.getOption().getLevel().getMin() + " >> " + d.getOption().getLevel().getMax());
-			lore.add("§6  Vé vào: §e" + (d.getOption().isTicketRequired() ? "x1 Vé" : "Không"));
+			lore.add("§3Trạng thái: §cKhông thể vào");
+			lore.add("§3Yêu cầu: ");
+			lore.add("§f  Cấp độ: §f" + d.getOption().getLevel().getMin() + " >> " + d.getOption().getLevel().getMax());
+			lore.add("§f  Vé vào: §f" + (d.getOption().isTicketRequired() ? "x1 Vé" : "Không"));
 
 			ItemStackUtils.setLore(item, lore);
 
@@ -73,9 +74,9 @@ public enum DQueueStatus {
 			List<String> lore = Lists.newArrayList();
 			lore.addAll(Utils.toList(d.getInfo().getDesc(), 25, "§7§o"));
 			lore.add("");
-			lore.add("§2Người chơi: §f" + q.getPlayers().size() + "/" + q.getMax() + "§7 (Tối thiểu: " + d.getOption().getPlayer().getMin() + ")");
-			lore.add("§2Trạng thái: §6Đang chờ, có thể thoát");
-			lore.add("§2Đếm ngược:  §f" + DQueues.getSecondsRemain(id) + "s");
+			lore.add("§3Người chơi: §f" + q.getPlayers().size() + "/" + q.getMax() + "§7 (Tối thiểu: " + d.getOption().getPlayer().getMin() + ")");
+			lore.add("§3Trạng thái: §fĐang chờ, có thể thoát");
+			lore.add("§3Đếm ngược:  §f" + DQueues.getSecondsRemain(id) + "s");
 
 			ItemStackUtils.setLore(item, lore);
 
@@ -97,8 +98,8 @@ public enum DQueueStatus {
 			List<String> lore = Lists.newArrayList();
 			lore.addAll(Utils.toList(d.getInfo().getDesc(), 25, "§7§o"));
 			lore.add("");
-			lore.add("§2Trạng thái: §9Bị trì hoãn");
-			lore.add("§2Đếm ngược:  §f" + Utils.format(DQueues.getRemainDelaySeconds(id, player) * 1000));
+			lore.add("§3Trạng thái: §fBị trì hoãn");
+			lore.add("§3Đếm ngược:  §f" + Utils.format(DQueues.getRemainDelaySeconds(id, player) * 1000));
 
 			ItemStackUtils.setLore(item, lore);
 
@@ -117,8 +118,8 @@ public enum DQueueStatus {
 			List<String> lore = Lists.newArrayList();
 			lore.addAll(Utils.toList(d.getInfo().getDesc(), 25, "§7§o"));
 			lore.add("");
-			lore.add("§2Trạng thái: §dĐang chiến đấu");
-			lore.add("§2Thời gian:  §f" + Utils.formatMinute(DGameUtils.getStatus(id).getAllStatistic().getTimeSurvived() * 1000));
+			lore.add("§3Trạng thái: §fĐang chiến đấu");
+			lore.add("§3Thời gian:  §f" + Utils.formatMinute(DGameUtils.getStatus(id).getAllStatistic().getTimeSurvived() * 1000));
 
 			ItemStackUtils.setLore(item, lore);
 

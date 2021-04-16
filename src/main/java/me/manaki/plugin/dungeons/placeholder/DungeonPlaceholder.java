@@ -1,6 +1,7 @@
 package me.manaki.plugin.dungeons.placeholder;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import me.manaki.plugin.dungeons.buff.Buff;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.player.DPlayer;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
@@ -51,6 +52,18 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
 
     @Override
     public String onPlaceholderRequest(Player player, String s){
+
+        if (s.equalsIgnoreCase("buff_drop")) {
+            var buff = Buff.DROP * 100;
+            DPlayer dp = DPlayer.from(player);
+            buff += dp.getDropRateBuff();
+            return buff + "%";
+        }
+        else if (s.equalsIgnoreCase("buff_revive")) {
+            DPlayer dp = DPlayer.from(player);
+            return dp.getReviveBuff() + "";
+        }
+
         if (!DPlayerUtils.isInDungeon(player)) return "DUNGEON NULL";
         String id = DPlayerUtils.getCurrentDungeon(player);
         Dungeon d = Dungeon.get(id);

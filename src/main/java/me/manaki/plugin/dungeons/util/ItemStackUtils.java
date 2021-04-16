@@ -1,5 +1,6 @@
 package me.manaki.plugin.dungeons.util;
 
+import me.manaki.plugin.dungeons.main.Dungeons;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -111,15 +112,15 @@ public class ItemStackUtils {
     }
     
     public static boolean hasTag(ItemStack item, String key) {
-    	return new ItemStackManager(item).hasTag(key);
+    	return new ItemStackManager(Dungeons.get(), item).hasTag(key);
     }
     
     public static String getTag(ItemStack item, String key) {
-        return new ItemStackManager(item).getTag(key);
+        return new ItemStackManager(Dungeons.get(), item).getTag(key);
     }
     
     public static ItemStack setTag(ItemStack item, String key, String value) {
-	    new ItemStackManager(item).setTag(key, value);
+	    new ItemStackManager(Dungeons.get(), item).setTag(key, value);
 	    return item;
     }
     

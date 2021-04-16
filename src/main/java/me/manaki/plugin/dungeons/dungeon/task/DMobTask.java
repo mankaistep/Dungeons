@@ -148,7 +148,7 @@ public class DMobTask extends BukkitRunnable {
 			d.getMoneyDrops().forEach(drop -> {
 				if (drop.getMobID().equals(this.mobID) || drop.getMobID().equals("*")) {
 					double originalChance = drop.getChance();
-					double chance = originalChance * Buff.DROP;
+					double chance = originalChance * (1 + Buff.DROP);
 
 					// Player buff
 					Player killer = mob.getKiller();

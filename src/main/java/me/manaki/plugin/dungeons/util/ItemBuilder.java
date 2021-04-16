@@ -44,7 +44,7 @@ public class ItemBuilder {
 		}
 		
 		int data = config.getInt(".data");
-		item.setDurability((short) data);
+		meta.setCustomModelData(data);
 		item.setItemMeta(meta);
 		
 		return item;

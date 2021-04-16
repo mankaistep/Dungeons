@@ -1,16 +1,19 @@
 package me.manaki.plugin.dungeons.queue;
 
 import com.google.common.collect.Lists;
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import me.manaki.plugin.dungeons.main.Dungeons;
 import me.manaki.plugin.dungeons.ticket.Tickets;
+import me.manaki.plugin.dungeons.util.ItemBuilder;
 import me.manaki.plugin.dungeons.util.ItemStackUtils;
 import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -20,14 +23,39 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class DQueueGUI {
 
 	public static final String TITLE = "§0§lSORASKY | PHÓ BẢN - DUNGEON";
-	
-	public static final int TUT_SLOT = 4;
-	
+
+	private static int guiSize;
+	private static ItemStack background;
+	private static List<Integer> backgroundSlots;
+	private static ItemStack tutorial;
+	private static int tutorialSlot;
+	private static ItemStack info;
+	private static int infoSlot;
+	private static ItemStack quit;
+	private static int quitSlot;
+
+	public static void load(FileConfiguration config) {
+		guiSize = config.getInt("gui.size");
+
+		background = ItemBuilder.buildItem(Objects.requireNonNull(config.getConfigurationSection("gui.background.item")));
+		backgroundSlots = config.getStringList("gui.background.slots").stream().map(Integer::parseInt).collect(Collectors.toList());
+
+		tutorial = ItemBuilder.buildItem(Objects.requireNonNull(config.getConfigurationSection("gui.tutorial.item")));
+		tutorialSlot = config.getInt("gui.tutorial.slot");
+
+		info = ItemBuilder.buildItem(Objects.requireNonNull(config.getConfigurationSection("gui.info.item")));
+		infoSlot = config.getInt("gui.info.slot");
+
+		quit = ItemBuilder.buildItem(Objects.requireNonNull(config.getConfigurationSection("gui.quit.item")));
+		quitSlot = config.getInt("gui.quit.slot");
+	}
+
 	public static void openGUI(Player player) {
 		int amount = 0;
 		for (Dungeon d : DDataUtils.getDungeons().values()) {
@@ -35,26 +63,23 @@ public class DQueueGUI {
 		}
 		amount++;
 		
-		int size = 45;
-//		if (amount % 9 == 0) size = amount;
-//		else size = (amount / 9 + 1) * 9;
+		int size = guiSize;
 		Inventory inv = Bukkit.createInventory(null, size, TITLE);
 		player.openInventory(inv);
 		
 		Bukkit.getScheduler().runTaskAsynchronously(Dungeons.get(), () -> {
-			for (int i = 0 ; i < inv.getSize() ; i++) {
-				if (!getEmptySlot().contains(i)) inv.setItem(i, getBlackSlot());
+			for (Integer i : backgroundSlots) {
+				inv.setItem(i, checkPlaceholderAPI(player, background.clone()));
 			}
-			inv.setItem(TUT_SLOT, getTut());
+			inv.setItem(infoSlot, checkPlaceholderAPI(player, info.clone()));
+			inv.setItem(tutorialSlot, checkPlaceholderAPI(player, tutorial.clone()));
+			inv.setItem(quitSlot, checkPlaceholderAPI(player, quit.clone()));
+
 		});
 		
 		BukkitRunnable br = new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (player.getOpenInventory() == null) {
-					this.cancel();
-					return;
-				}
 				if (!player.getOpenInventory().getTitle().equals(TITLE)) {
 					this.cancel();
 					return;
@@ -75,7 +100,12 @@ public class DQueueGUI {
 		
 		Player player = (Player) e.getWhoClicked();
 		int slot = e.getSlot();
-		
+
+		if (slot == quitSlot) {
+			player.closeInventory();
+			return;
+		}
+
 		ItemStack item = e.getInventory().getItem(slot);
 		if (ItemStackUtils.hasTag(item, "dungeonClick")) {
 			String id = ItemStackUtils.getTag(item, "dungeonID");
@@ -136,6 +166,23 @@ public class DQueueGUI {
 		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 		other.setItemMeta(meta);
 		return other;
+	}
+
+	public static ItemStack checkPlaceholderAPI(Player player, ItemStack is) {
+		if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) return is;
+		var meta = is.getItemMeta();
+		if (meta.hasDisplayName()) {
+			meta.setDisplayName(PlaceholderAPI.setPlaceholders(player, meta.getDisplayName()));
+		}
+		if (meta.hasLore()) {
+			var lore = meta.getLore();
+			for (int i = 0; i < lore.size(); i++) {
+				lore.set(i, PlaceholderAPI.setPlaceholders(player, lore.get(i)));
+			}
+			meta.setLore(lore);
+		}
+		is.setItemMeta(meta);
+		return is;
 	}
 	
 	public static List<Integer> getEmptySlot() {

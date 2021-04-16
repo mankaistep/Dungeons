@@ -6,6 +6,7 @@ import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.guarded.Guardeds;
 import me.manaki.plugin.dungeons.listener.EntityListener;
 import me.manaki.plugin.dungeons.placeholder.DungeonPlaceholder;
+import me.manaki.plugin.dungeons.queue.DQueueGUI;
 import me.manaki.plugin.dungeons.queue.DQueueTask;
 import me.manaki.plugin.dungeons.yaml.YamlFile;
 import me.manaki.plugin.dungeons.dungeon.manager.DGameEnds;
@@ -57,6 +58,7 @@ public class Dungeons extends JavaPlugin {
 		Tickets.init(YamlFile.CONFIG.get());
 		Slaves.reload(YamlFile.CONFIG.get());
 		Guardeds.reload(YamlFile.CONFIG.get());
+		DQueueGUI.load(YamlFile.CONFIG.get());
 
 		// Featherboard
 		if (Bukkit.getPluginManager().isPluginEnabled("FeatherBoard")) {
