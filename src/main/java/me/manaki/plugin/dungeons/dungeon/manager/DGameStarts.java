@@ -231,6 +231,7 @@ public class DGameStarts {
 		DStatus status = DGameUtils.getStatus(id);
 		Dungeon d = DDataUtils.getDungeon(id);
 		TSGuarded guard = t.getSpawn().getGuarded();
+
 		if (guard.getGuarded() == null) return;
 
 		DLocation dl = d.getLocation(guard.getLocation());

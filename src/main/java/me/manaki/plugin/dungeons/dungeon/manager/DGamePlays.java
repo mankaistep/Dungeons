@@ -24,6 +24,8 @@ public class DGamePlays {
 		sd.removePlayer(player);
 		if (toSpawn) player.teleport(Utils.getPlayerSpawn());
 		Lang.DUNGEON_PLAYER_KICK.send(player);
+
+		DGameEnds.featherBoardCheck(player);
 	}
 	
 	public static void dead(Player player, boolean teleport) {

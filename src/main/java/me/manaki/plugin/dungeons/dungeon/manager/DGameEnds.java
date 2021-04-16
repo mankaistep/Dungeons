@@ -42,32 +42,39 @@ public class DGameEnds {
 			l.getWorld().playSound(l, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
 			l.getBlock().setType(Material.CHEST);
 		});
-		
-		// Win commands
-		t.getCommand().getWins().forEach(cmd -> {
-			ds.getPlayers().forEach(uuid -> {
-				Player player = Bukkit.getPlayer(uuid);
-				new Command(cmd).execute(player);
+
+		try {
+			// Win commands
+			t.getCommand().getWins().forEach(cmd -> {
+				ds.getPlayers().forEach(uuid -> {
+					Player player = Bukkit.getPlayer(uuid);
+					new Command(cmd).execute(player);
+				});
 			});
-		});
-
-		// Clear tasks
-		for (BukkitRunnable btask : ds.getTasks()) {
-			if (btask instanceof DMobTask || btask instanceof DSlaveTask || btask instanceof DGuardedTask) {
-				btask.cancel();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			// Clear tasks
+			for (BukkitRunnable btask : ds.getTasks()) {
+				if (btask instanceof DMobTask || btask instanceof DSlaveTask || btask instanceof DGuardedTask) {
+					btask.cancel();
+				}
 			}
-		}
 
-		// New status
-		ds.setTurnStatus(new TStatus());
+			// New status
+			ds.setTurnStatus(new TStatus());
 
-		// Check next
-		if (DGameUtils.isLastTurn(id, turn)) {
-			task.cancel();
-			winDungeon(id);
+			// Check next
+			if (DGameUtils.isLastTurn(id, turn)) {
+				task.cancel();
+				winDungeon(id);
+			}
+			else DGameStarts.startNextTurn(id);
 		}
-		else DGameStarts.startNextTurn(id);
 	}
+
 	
 	public static void winDungeon(String id) {
 		DStatus status = DGameUtils.getStatus(id);
@@ -97,16 +104,23 @@ public class DGameEnds {
 		DStatus ds = DGameUtils.getStatus(id);
 		DTurn t = DGameUtils.getTurn(id, turn);
 
-		// Lose commands
-		t.getCommand().getLoses().forEach(cmd -> {
-			ds.getPlayers().forEach(uuid -> {
-				Player player = Bukkit.getPlayer(uuid);
-				new Command(cmd).execute(player);
+		try {
+			// Lose commands
+			t.getCommand().getLoses().forEach(cmd -> {
+				ds.getPlayers().forEach(uuid -> {
+					Player player = Bukkit.getPlayer(uuid);
+					new Command(cmd).execute(player);
+				});
 			});
-		});
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			// Lose dungeon
+			loseDungeon(id);
+		}
 
-		// Lose dungeon
-		loseDungeon(id);
 	}
 	
 	public static void loseDungeon(String id) {

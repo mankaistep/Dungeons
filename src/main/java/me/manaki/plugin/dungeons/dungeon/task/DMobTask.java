@@ -47,12 +47,12 @@ public class DMobTask extends BukkitRunnable {
 	}
 
 	public void checkSpawn() {
-		if (isSpawned)
-			return;
+		if (isSpawned) return;
+		var d = DDataUtils.getDungeon(dungeon);
 		boolean hasPlayerNear = false;
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			if (player.getWorld() == loc.getWorld()) {
-				if (player.getLocation().distance(loc) < 30) {
+				if (player.getLocation().distance(loc) <= d.getOption().getSpawnRadius()) {
 					hasPlayerNear = true;
 					break;
 				}

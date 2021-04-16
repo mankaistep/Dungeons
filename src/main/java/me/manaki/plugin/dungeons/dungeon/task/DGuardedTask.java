@@ -108,10 +108,12 @@ public class DGuardedTask extends BukkitRunnable {
             // Check Lose Req
             Dungeon d = DDataUtils.getDungeon(this.dungeonID);
             DTurn turn = d.getTurn(status.getTurn());
-            if (turn.getLoseRequirement().getGuardedKilled().equalsIgnoreCase(this.id)) {
-                // Lose turn
-                DGameEnds.loseTurn(this.dungeonID, status.getTurn());
-                Lang.DUNGEON_LOSE_GUARDED_DEATH.broadcast("%dungeon%", d.getInfo().getName());;
+            if (turn.getLoseRequirement().getGuardedKilled() != null) {
+                if (turn.getLoseRequirement().getGuardedKilled().equalsIgnoreCase(this.id)) {
+                    // Lose turn
+                    DGameEnds.loseTurn(this.dungeonID, status.getTurn());
+                    Lang.DUNGEON_LOSE_GUARDED_DEATH.broadcast("%dungeon%", d.getInfo().getName());;
+                }
             }
 
             // Cancel task

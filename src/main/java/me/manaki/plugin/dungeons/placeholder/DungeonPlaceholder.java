@@ -93,7 +93,7 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
             return  d.getRule().getRespawnTime() + DPlayer.from(player).getReviveBuff() + "";
         }
         else if (s.equalsIgnoreCase("turn_mob_left")) {
-            return status.getTurnStatus().getMobToKills().size() + "";
+            return (DGameUtils.countMobs(d.getTurn(status.getTurn())) - status.getAllStatistic().getMobKilled()) + "";
         }
         else if (s.equalsIgnoreCase("turn_mob_max")) {
             return DGameUtils.countMobs(d.getTurn(status.getTurn())) + "";

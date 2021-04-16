@@ -5,8 +5,11 @@ import me.manaki.plugin.dungeons.util.MinMax;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.Objects;
+
 public class DOption extends Configable {
-	
+
+	private int spawnRadius;
 	private boolean ticketRequired;
 	private int maxTime;
 	private MinMax player;
@@ -28,7 +31,12 @@ public class DOption extends Configable {
 //		this.guiSlot = guiSlot;
 //		this.mobGlow = mobGlow;
 //	}
-	
+
+
+	public int getSpawnRadius() {
+		return spawnRadius;
+	}
+
 	public int getMaxTime() {
 		return this.maxTime;
 	}
@@ -67,9 +75,10 @@ public class DOption extends Configable {
 	
 	@Override
 	public void load(FileConfiguration config, String path) {
+		this.spawnRadius = config.getInt(path + ".spawn-radius", 30);
 		this.maxTime = config.getInt(path + ".max-time");
-		this.player = new MinMax(config.getString(path + ".player"));
-		this.level = new MinMax(config.getString(path + ".level"));
+		this.player = new MinMax(Objects.requireNonNull(config.getString(path + ".player")));
+		this.level = new MinMax(Objects.requireNonNull(config.getString(path + ".level")));
 		this.guiSlot = config.getInt(path + ".gui-slot");
 		this.mobGlow = config.getBoolean(path + ".mob-glow");
 		if (config.contains(path + ".gui-icon")) {
@@ -88,6 +97,7 @@ public class DOption extends Configable {
 
 	@Override
 	public void save(FileConfiguration config, String path) {
+		config.set(path + ".spawn-radius", this.spawnRadius);
 		config.set(path + ".ticket-required", this.ticketRequired);
 		config.set(path + ".max-time", this.maxTime);
 		config.set(path + ".player", this.player.toString());

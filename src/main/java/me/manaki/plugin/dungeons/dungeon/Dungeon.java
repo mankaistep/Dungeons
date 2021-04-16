@@ -188,12 +188,13 @@ public class Dungeon extends Configable {
 			dl.add(drop.toString());
 		});
 		config.set(path + ".drop", dl);
-		
+
+		config.set(path + ".check-points", this.checkPoints);
+
 		for (int i = 0 ; i < turns.size() ; i++) {
 			turns.get(i).save(config, path + ".turn.t" + (i + 1));
 		}
-		
-		config.set(path + ".check-points", this.checkPoints);
+
 	}
 
 	public static Dungeon get(String id) {
