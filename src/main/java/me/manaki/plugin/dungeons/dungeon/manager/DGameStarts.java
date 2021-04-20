@@ -109,9 +109,7 @@ public class DGameStarts {
 		d.getInfo().getWorlds().forEach(w -> {
 			World world = Bukkit.getWorld(w);
 			if (world != null) {
-				world.getEntities().forEach(e -> {
-					DGameUtils.checkAndRemove(e);
-				});
+				world.getEntities().forEach(DGameUtils::checkAndRemove);
 			}
 		});
 	}
@@ -232,14 +230,12 @@ public class DGameStarts {
 		Dungeon d = DDataUtils.getDungeon(id);
 		TSGuarded guard = t.getSpawn().getGuarded();
 
-		if (guard.getGuarded() == null) return;
 		if (guardedTask != null && guardedTask.getId().equalsIgnoreCase(guard.getGuarded())) {
-			status.addTask(guardedTask);
 			status.getTurnStatus().setGuarded(guardedTask.getEntity());
-
 			return;
 		}
-		if (guardedTask != null) guardedTask.cancel();
+		if (guardedTask != null) status.cancelTask(guardedTask);
+		if (guard.isGuardedNull()) return;
 
 		DLocation dl = d.getLocation(guard.getLocation());
 		Location l = dl.getLocation();

@@ -139,10 +139,10 @@ public enum CType {
 					int nextTurn = currentTurn + 1;
 					var turn = DDataUtils.getDungeon(id).getTurn(currentTurn);
 					DTurn turnNext = DDataUtils.getDungeon(id).getTurn(nextTurn);
-					if (turnNext.getSpawn().getGuarded() != null && turnNext.getSpawn().getGuarded().getGuarded().equals(turn.getSpawn().getGuarded().getGuarded())) return;
+					if (!turnNext.getSpawn().getGuarded().isGuardedNull() && turnNext.getSpawn().getGuarded().getGuarded().equals(turn.getSpawn().getGuarded().getGuarded())) return;
 				}
 			}
-			s.getTurnStatus().getGuarded().remove();
+			if (s.getTurnStatus().getGuarded() != null) s.getTurnStatus().getGuarded().remove();
 		}
 	};
 	

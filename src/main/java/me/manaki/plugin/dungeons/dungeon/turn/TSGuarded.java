@@ -22,6 +22,10 @@ public class TSGuarded {
         return this.slv;
     }
 
+    public boolean isGuardedNull() {
+        return this.slv == null || this.slv.equals("");
+    }
+
     public String getLocation() {
         return this.loc;
     }
