@@ -59,7 +59,7 @@ public class DGameStarts {
 		createPlayerTasks(id);
 		
 		// Turn
-		startTurn(id, 1);
+		startTurn(id, 1, null);
 
 		// Featherboard
 		for (UUID uuid : players) {
@@ -71,7 +71,7 @@ public class DGameStarts {
 		Bukkit.getPluginManager().callEvent(new DungeonStartEvent(id));
 	}
 
-	public static void startNextTurn(String id) {
+	public static void startNextTurn(String id, DGuardedTask guardTask) {
 		DStatus status = DGameUtils.getStatus(id);
 		int turn = status.getTurn();
 		
@@ -79,10 +79,10 @@ public class DGameStarts {
 		if (DGameUtils.isLastTurn(id, turn)) {
 			DGameEnds.winDungeon(id);
 		}
-		else startTurn(id, turn + 1);
+		else startTurn(id, turn + 1, guardTask);
 	}
 	
-	public static void startTurn(String id, int tI) {
+	public static void startTurn(String id, int tI, DGuardedTask guardTask) {
 		DTurn turn = DGameUtils.getTurn(id, tI);
 		DStatus ds = DGameUtils.getStatus(id);
 		ds.setTurn(tI);
@@ -97,7 +97,7 @@ public class DGameStarts {
 			spawnBlockBreak(id, tI);
 			spawnMobs(id, tI);
 			spawnSlaves(id, tI);
-			spawnGuarded(id, tI);
+			spawnGuarded(id, tI, guardTask);
 		}, turn.getSpawn().getDelay());
 	}
 	
@@ -226,13 +226,20 @@ public class DGameStarts {
 		});
 	}
 
-	private static void spawnGuarded(String id, int turn) {
+	private static void spawnGuarded(String id, int turn, DGuardedTask guardedTask) {
 		DTurn t = DGameUtils.getTurn(id, turn);
 		DStatus status = DGameUtils.getStatus(id);
 		Dungeon d = DDataUtils.getDungeon(id);
 		TSGuarded guard = t.getSpawn().getGuarded();
 
 		if (guard.getGuarded() == null) return;
+		if (guardedTask != null && guardedTask.getId().equalsIgnoreCase(guard.getGuarded())) {
+			status.addTask(guardedTask);
+			status.getTurnStatus().setGuarded(guardedTask.getEntity());
+
+			return;
+		}
+		if (guardedTask != null) guardedTask.cancel();
 
 		DLocation dl = d.getLocation(guard.getLocation());
 		Location l = dl.getLocation();

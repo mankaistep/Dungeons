@@ -158,4 +158,19 @@ public class DGuardedTask extends BukkitRunnable {
         entity.teleport(l);
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public Villager getEntity() {
+        return entity;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public boolean isSpawned() {
+        return isSpawned;
+    }
 }

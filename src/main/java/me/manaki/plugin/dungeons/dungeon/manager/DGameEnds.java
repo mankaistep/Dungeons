@@ -57,10 +57,12 @@ public class DGameEnds {
 		}
 		finally {
 			// Clear tasks
+			DGuardedTask guardedTask = null;
 			for (BukkitRunnable btask : ds.getTasks()) {
-				if (btask instanceof DMobTask || btask instanceof DSlaveTask || btask instanceof DGuardedTask) {
+				if (btask instanceof DMobTask || btask instanceof DSlaveTask) {
 					btask.cancel();
 				}
+				else if (btask instanceof DGuardedTask) guardedTask = (DGuardedTask) btask;
 			}
 
 			// New status
@@ -68,10 +70,11 @@ public class DGameEnds {
 
 			// Check next
 			if (DGameUtils.isLastTurn(id, turn)) {
+				if (guardedTask != null) guardedTask.cancel();
 				task.cancel();
 				winDungeon(id);
 			}
-			else DGameStarts.startNextTurn(id);
+			else DGameStarts.startNextTurn(id, guardedTask);
 		}
 	}
 

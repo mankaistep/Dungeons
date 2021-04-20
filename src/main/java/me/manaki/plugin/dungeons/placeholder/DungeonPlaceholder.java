@@ -64,7 +64,8 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
             return dp.getReviveBuff() + "";
         }
 
-        if (!DPlayerUtils.isInDungeon(player)) return "DUNGEON NULL";
+        if (!DPlayerUtils.isInDungeon(player)) return "no dungeon";
+
         String id = DPlayerUtils.getCurrentDungeon(player);
         Dungeon d = Dungeon.get(id);
         DStatus status = DGameUtils.getStatus(id);
@@ -106,7 +107,7 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
             return  d.getRule().getRespawnTime() + DPlayer.from(player).getReviveBuff() + "";
         }
         else if (s.equalsIgnoreCase("turn_mob_left")) {
-            return (DGameUtils.countMobs(d.getTurn(status.getTurn())) - status.getAllStatistic().getMobKilled()) + "";
+            return (DGameUtils.countMobs(d.getTurn(status.getTurn())) - status.getTurnStatus().getStatistic().getMobKilled()) + "";
         }
         else if (s.equalsIgnoreCase("turn_mob_max")) {
             return DGameUtils.countMobs(d.getTurn(status.getTurn())) + "";
