@@ -72,7 +72,7 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
         DTurn turn = d.getTurn(status.getTurn());
 
         String o = turn.getObjective();
-        List<String> objective = Utils.toList(o, 23, "");
+        List<String> objective = Utils.toList(o, 20, "");
 
         if (s.equalsIgnoreCase("name")) {
             return d.getInfo().getName();

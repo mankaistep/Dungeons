@@ -155,6 +155,7 @@ public class AdminPluginCommand implements CommandExecutor {
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
 			sendTut(sender);
+			e.printStackTrace();
 		}
 		
 		return false;
