@@ -162,7 +162,8 @@ public class DGameEnds {
 				if (System.currentTimeMillis() - start >= 60000 || players.size() == 0) {
 					DGameStarts.clearEntities(id);
 					players.forEach(player -> {
-						player.teleport(Utils.getPlayerSpawn());
+//						player.teleport(Utils.getPlayerSpawn());
+						Utils.toSpawn(player);
 					});
 					DGameUtils.removeStatus(id);
 					DQueues.newQueue(id);

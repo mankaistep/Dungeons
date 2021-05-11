@@ -113,7 +113,7 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
             return DGameUtils.countMobs(d.getTurn(status.getTurn())) + "";
         }
         else if (s.equalsIgnoreCase("turn_slave_left")) {
-            return status.getTurnStatus().getSlaveToSaves().size() + "";
+            return (DGameUtils.countSlaves(d.getTurn(status.getTurn())) - status.getTurnStatus().getStatistic().getSlaveSaved()) + "";
         }
         else if (s.equalsIgnoreCase("turn_slave_max")) {
             return DGameUtils.countSlaves(d.getTurn(status.getTurn())) + "";

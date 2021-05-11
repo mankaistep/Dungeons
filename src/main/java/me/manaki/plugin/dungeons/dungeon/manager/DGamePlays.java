@@ -22,7 +22,10 @@ public class DGamePlays {
 		BossBar bb = sd.getBossBar();
 		if (bb != null) bb.removePlayer(player);
 		sd.removePlayer(player);
-		if (toSpawn) player.teleport(Utils.getPlayerSpawn());
+		if (toSpawn) {
+			//player.teleport(Utils.getPlayerSpawn());
+			Utils.toSpawn(player);
+		}
 		Lang.DUNGEON_PLAYER_KICK.send(player);
 
 		DGameEnds.featherBoardCheck(player);
@@ -44,7 +47,10 @@ public class DGamePlays {
 			BossBar bb = sd.getBossBar();
 			if (bb != null) bb.removePlayer(player);
 			sd.removePlayer(player);
-			if (teleport) player.teleport(Utils.getPlayerSpawn());
+			if (teleport) {
+//				player.teleport(Utils.getPlayerSpawn());
+				Utils.toSpawn(player);
+			}
 			sd.getPlayers().forEach(uuid -> {
 				Player p = Bukkit.getPlayer(uuid);
 				Lang.DUNGEON_PLAYER_DEAD_KICK_OTHER.send(p, "%player%", "" + player.getName());

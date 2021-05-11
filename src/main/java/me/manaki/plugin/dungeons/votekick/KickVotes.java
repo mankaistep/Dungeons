@@ -31,7 +31,8 @@ public class KickVotes {
 				Lang.DUNGEON_VOTE_KICK_YES.send(p, "%target%", target.getName());
 			});;
 			Bukkit.getScheduler().runTask(Dungeons.get(), () -> {
-				target.teleport(Utils.getPlayerSpawn());
+//				target.teleport(Utils.getPlayerSpawn());
+				Utils.toSpawn(target);
 			});
 		}
 		else {

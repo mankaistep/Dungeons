@@ -54,16 +54,22 @@ public class AdminPluginCommand implements CommandExecutor {
 				if (args.length > 2) {
 					for (int i = 2 ; i < args.length ; i++) list.add(Bukkit.getPlayerUniqueId(args[i]));
 				}
-				if (DDataUtils.checkProblem(id)) {
-					if (DQueues.hasQueue(id)) {
-						DQueues.remove(id);
-					}
-					if (DGameUtils.isPlaying(id)) {
-						DGameEnds.loseDungeon(id);
-					}
-					DGameStarts.startDungeon(id, list);
-					DQueues.doStart(id);
+				for (UUID uuid : list) {
+					Utils.toSpawn(Bukkit.getPlayer(uuid));
 				}
+				Bukkit.getScheduler().runTaskLater(Dungeons.get(), () -> {
+					if (DDataUtils.checkProblem(id)) {
+						if (DQueues.hasQueue(id)) {
+							DQueues.remove(id);
+						}
+						if (DGameUtils.isPlaying(id)) {
+							DGameEnds.loseDungeon(id);
+						}
+						DGameStarts.startDungeon(id, list);
+						DQueues.doStart(id);
+					}
+				}, 20);
+
 			}
 			
 			else if (args[0].equalsIgnoreCase("setlocation")) {
