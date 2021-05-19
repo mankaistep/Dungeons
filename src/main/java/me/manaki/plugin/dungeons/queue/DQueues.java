@@ -19,7 +19,7 @@ import java.util.Set;
 public class DQueues {
 	
 	public static final long TIME_WAIT_MILIS = 120000;
-	public static final long TIME_DELAY_MILIS = 2700000;
+	public static final long TIME_DELAY_MILIS = 0;
 	
 	private static Map<String, DQueue> joins = new HashMap<String, DQueue> ();
 	private static Map<String, Long> waitTime = new HashMap<String, Long> ();

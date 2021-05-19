@@ -30,6 +30,9 @@ public enum DQueueStatus {
 			lore.add("");
 			lore.add("§3Người chơi: §f" + q.getPlayers().size() + "/" + q.getMax());
 			lore.add("§3Trạng thái: §fCó thể vào");
+			if (d.getOption().isTicketRequired()) {
+				lore.add("§3Tiêu thụ: §fx1 Vé");
+			}
 
 			ItemStackUtils.setLore(item, lore);
 
@@ -53,8 +56,9 @@ public enum DQueueStatus {
 			lore.add("");
 			lore.add("§3Trạng thái: §cKhông thể vào");
 			lore.add("§3Yêu cầu: ");
-			lore.add("§f  Cấp độ: §f" + d.getOption().getLevel().getMin() + " >> " + d.getOption().getLevel().getMax());
-			lore.add("§f  Vé vào: §f" + (d.getOption().isTicketRequired() ? "x1 Vé" : "Không"));
+			lore.add("§c  Số lượng: §f" + d.getOption().getPlayer().getMin() + " >> " + d.getOption().getPlayer().getMax());
+			lore.add("§c  Cấp độ: §f" + d.getOption().getLevel().getMin() + " >> " + d.getOption().getLevel().getMax());
+			lore.add("§c  Vé vào: §f" + (d.getOption().isTicketRequired() ? "x1 Vé" : "Không"));
 
 			ItemStackUtils.setLore(item, lore);
 

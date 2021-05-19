@@ -19,12 +19,15 @@ public class Tickets {
 	}
 	
 	public static ItemStack getTicket(String id) {
-		Dungeon d = DDataUtils.getDungeon(id);
-		String name = d.getInfo().getName();
-		
 		ItemStack is = PATTERN.clone();
 		ItemMeta meta = is.getItemMeta();
-		meta.setDisplayName(meta.getDisplayName().replace("%dungeon_name%", name));
+		String name = null;
+		if (!id.equalsIgnoreCase("*")) {
+			Dungeon d = DDataUtils.getDungeon(id);
+ 			name = d.getInfo().getName();
+			meta.setDisplayName(meta.getDisplayName().replace("%dungeon_name%", name));
+		}
+
 		is.setItemMeta(meta);
 		
 		return ItemStackUtils.setTag(is, "dungeon3.ticket", id);
@@ -37,10 +40,10 @@ public class Tickets {
 	public static boolean isTicket(ItemStack is, String id) {
 		if (!isTicket(is)) return false;
 		String tid = getDungeon(is);
-		return id.equalsIgnoreCase(tid);
+		return tid.equalsIgnoreCase("*") || id.equalsIgnoreCase(tid);
 	}
 	
-	public static String getDungeon(ItemStack ticket) {
+	private static String getDungeon(ItemStack ticket) {
 		return ItemStackUtils.getTag(ticket, "dungeon3.ticket");
 	}
 	
