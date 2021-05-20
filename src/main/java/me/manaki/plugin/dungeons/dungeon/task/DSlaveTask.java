@@ -50,11 +50,18 @@ public class DSlaveTask extends BukkitRunnable {
 	
 	@Override
 	public void run() {
-		checkSpawn();
-		checkLocation();
-		checkValid();
-		checkScream();
-		playerLook();
+		try {
+			checkSpawn();
+			checkLocation();
+			checkValid();
+			checkScream();
+			playerLook();
+		}
+		catch (IllegalArgumentException e) {
+			Dungeons.get().getLogger().severe("Mob task catch IllegalArgumentException");
+			Dungeons.get().getLogger().severe("Maybe for UnloadedWorld? -> Stop task");
+			this.cancel();
+		}
 	}
 	
 	public void checkScream() {

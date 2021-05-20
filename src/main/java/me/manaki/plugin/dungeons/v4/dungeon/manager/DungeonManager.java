@@ -296,7 +296,7 @@ public class DungeonManager {
         var d = DDataUtils.getDungeon(dungeonID);
         var world = status.getCache().getWorldCache().toWorld();
 
-        // Clear
+        // Clear task + boss bar
         BossBar bb = status.getBossBar();
         if (bb != null) bb.removeAll();
         status.getTasks().forEach(br -> {
@@ -321,7 +321,7 @@ public class DungeonManager {
                 List<Player> players = inDungeonFilter(remainPlayers, dungeonID);
                 if (System.currentTimeMillis() - start >= 60000 || players.size() == 0) {
                     // Back to spawn
-                    //                        player.teleport(Utils.getPlayerSpawn());
+                    // player.teleport(Utils.getPlayerSpawn());
                     players.forEach(Utils::toSpawn);
 
                     Tasks.async(() -> {

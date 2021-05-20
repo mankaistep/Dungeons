@@ -41,9 +41,16 @@ public class DMobTask extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		checkSpawn();
-		checkLocation();
-		checkValid();
+		try {
+			checkSpawn();
+			checkLocation();
+			checkValid();
+		}
+		catch (IllegalArgumentException e) {
+			Dungeons.get().getLogger().severe("Mob task catch IllegalArgumentException");
+			Dungeons.get().getLogger().severe("Maybe for UnloadedWorld? -> Stop task");
+			this.cancel();
+		}
 	}
 
 	public void checkSpawn() {
