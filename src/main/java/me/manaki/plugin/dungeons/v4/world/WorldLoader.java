@@ -129,23 +129,23 @@ public class WorldLoader {
                 // Load and add cache
                 if (isAsync) Tasks.sync(() -> {
                     long start = System.currentTimeMillis();
-                    plugin.getLogger().info("Loading world " + name + "... (from async task)");
+                    plugin.getLogger().warning("Loading world " + name + "... (from async task)");
                     creator.createWorld();
-                    plugin.getLogger().info("Loaded world " + name + "!");
-                    plugin.getLogger().info("Took " + (System.currentTimeMillis() - start) + "ms");
+                    plugin.getLogger().warning("Loaded world " + name + "!");
+                    plugin.getLogger().warning("Took " + (System.currentTimeMillis() - start) + "ms");
                 });
                 else {
                     long start = System.currentTimeMillis();
-                    plugin.getLogger().info("Loading world " + name + "...");
+                    plugin.getLogger().warning("Loading world " + name + "...");
                     creator.createWorld();
-                    plugin.getLogger().info("Loaded world " + name + "!");
-                    plugin.getLogger().info("Took " + (System.currentTimeMillis() - start) + "ms");
+                    plugin.getLogger().warning("Loaded world " + name + "!");
+                    plugin.getLogger().warning("Took " + (System.currentTimeMillis() - start) + "ms");
                 }
             }
             catch (Exception e) {
                 unload(name, isAsync);
-                plugin.getLogger().info("It seems like there is an exception intefere it from loading");
-                plugin.getLogger().info("Unloaded world " + name);
+                plugin.getLogger().warning("It seems like there is an exception intefere it from loading");
+                plugin.getLogger().warning("Unloaded world " + name);
                 e.printStackTrace();
             }
 
@@ -177,11 +177,11 @@ public class WorldLoader {
         if (isAsync) Tasks.sync(() -> {
             // Async unload bukkit world
             long start = System.currentTimeMillis();
-            plugin.getLogger().info("Unloading world " + worldName + "... (from async task)");
+            plugin.getLogger().warning("Unloading world " + worldName + "... (from async task)");
             Bukkit.unloadWorld(world, false);
             Bukkit.getWorlds().remove(world);
-            plugin.getLogger().info("Unloaded world " + worldName + "!");
-            plugin.getLogger().info("Took " + (System.currentTimeMillis() - start) + "ms");
+            plugin.getLogger().warning("Unloaded world " + worldName + "!");
+            plugin.getLogger().warning("Took " + (System.currentTimeMillis() - start) + "ms");
 
             // Async I/O
             Tasks.async(() -> {

@@ -41,5 +41,7 @@ public class V4Config {
         return worldTemplates.getOrDefault(id, new WorldTemplate(id));
     }
 
-
+    public Map<String, WorldTemplate> getWorldTemplates() {
+        return worldTemplates;
+    }
 }

@@ -21,6 +21,7 @@ import me.manaki.plugin.dungeons.task.DMoneyCoinTask;
 import me.manaki.plugin.dungeons.ticket.Tickets;
 import me.manaki.plugin.dungeons.v4.config.V4Config;
 import me.manaki.plugin.dungeons.v4.dungeon.manager.DungeonManager;
+import me.manaki.plugin.dungeons.v4.world.WorldListener;
 import me.manaki.plugin.dungeons.v4.world.WorldLoader;
 import me.manaki.plugin.dungeons.v4.world.WorldManager;
 import me.manaki.plugin.dungeons.yaml.YamlFile;
@@ -95,6 +96,7 @@ public class Dungeons extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
 		Bukkit.getPluginManager().registerEvents(new EntityListener(this), this);
 		Bukkit.getPluginManager().registerEvents(new DungeonListener(this), this);
+		Bukkit.getPluginManager().registerEvents(new WorldListener(this), this);
 		Bukkit.getPluginManager().registerEvents(new GUIListener(), this);
 	}
 	

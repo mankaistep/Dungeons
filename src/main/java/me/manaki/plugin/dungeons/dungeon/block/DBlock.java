@@ -54,8 +54,12 @@ public class DBlock extends Configable {
 		double x = Double.parseDouble(s.split(";")[2]);
 		double y = Double.parseDouble(s.split(";")[3]);
 		double z = Double.parseDouble(s.split(";")[4]);
-		float p = Float.parseFloat(s.split(";")[5]);
-		float yw = Float.parseFloat(s.split(";")[6]);
+		float p = 0;
+		float yw = 0;
+		if (s.split(";").length > 5) {
+			p = Float.parseFloat(s.split(";")[5]);
+			yw = Float.parseFloat(s.split(";")[6]);
+		}
 
 		this.m = m;
 		this.d = d;
