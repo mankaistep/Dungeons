@@ -6,6 +6,7 @@ main: me.manaki.plugin.dungeons.Dungeons
 depend: [MythicMobs, EssentialsSpawn]
 softdepend: [Shops, Vault, FeatherBoard, PlaceholderAPI]
 api-version: 1.16
+loadbefore: [WorldGuard]
 commands:
     dungeons:
         description: Plugin's commands

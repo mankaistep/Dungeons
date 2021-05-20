@@ -2,20 +2,21 @@ package me.manaki.plugin.dungeons.util;
 
 import com.earth2me.essentials.spawn.EssentialsSpawn;
 import com.google.common.collect.Lists;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.location.DLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
 
 public class Utils {
 
@@ -190,6 +191,27 @@ public class Utils {
 
 	public static void toSpawn(Player player) {
 		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
+	}
+
+	public static void clearWorldGuardTemporaryData() {
+		var plugin = Dungeons.get();
+		var path = plugin.getDataFolder().getPath().replace("Dungeons", "WorldGuard//worlds");
+		var folder = new File(path);
+		File[] files = folder.listFiles();
+		assert files != null;
+		for (File file : files) {
+			var name = file.getName();
+			for (String world : plugin.getV4Config().getWorldTemplates().keySet()) {
+				if (name.contains(world + "_") && !name.equals(world)) {
+					try {
+						FileUtils.deleteDirectory(file);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					plugin.getLogger().warning("Delete config " + name + " from WorldGuard");
+				}
+			}
+		}
 	}
 	
 }

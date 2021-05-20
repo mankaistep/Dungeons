@@ -19,6 +19,7 @@ import me.manaki.plugin.dungeons.rank.Rank;
 import me.manaki.plugin.dungeons.slave.Slaves;
 import me.manaki.plugin.dungeons.task.DMoneyCoinTask;
 import me.manaki.plugin.dungeons.ticket.Tickets;
+import me.manaki.plugin.dungeons.util.Utils;
 import me.manaki.plugin.dungeons.v4.config.V4Config;
 import me.manaki.plugin.dungeons.v4.dungeon.manager.DungeonManager;
 import me.manaki.plugin.dungeons.v4.world.WorldListener;
@@ -50,6 +51,10 @@ public class Dungeons extends JavaPlugin {
 		this.worldLoader = new WorldLoader(this);
 		this.worldManager = new WorldManager(this);
 		this.dungeonManager = new DungeonManager(this);
+
+		// WorldGuard
+		this.v4Config.reload();
+		Utils.clearWorldGuardTemporaryData();
 
 		if (Bukkit.getOnlinePlayers().size() > 0) this.reloadConfig();
 	}
