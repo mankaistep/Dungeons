@@ -19,9 +19,7 @@ public class DGuardedTask extends BukkitRunnable {
 
     private final long LOOK_COOLDOWN = 5000;
 
-    private final Dungeons plugin;
-
-    private String dungeonCache;
+    private String dungeonID;
     private String id;
     private Villager entity;
     private Location location;
@@ -30,14 +28,13 @@ public class DGuardedTask extends BukkitRunnable {
 
     private long lastLook;
 
-    public DGuardedTask(String id, String dungeonCache, Location location, DStatus status) {
-        this.dungeonCache = dungeonCache;
+    public DGuardedTask(String id, String dungeonID, Location location, DStatus status) {
+        this.dungeonID = dungeonID;
         this.id = id;
         this.location = location;
         this.status = status;
         this.isSpawned = false;
         this.runTaskTimer(Dungeons.get(), 0, 5);
-        this.plugin = Dungeons.get();
     }
 
     @Override
@@ -99,7 +96,7 @@ public class DGuardedTask extends BukkitRunnable {
         entity.setMetadata("Dungeon3", new FixedMetadataValue(Dungeons.get(), ""));
         entity.setMetadata("Guarded", new FixedMetadataValue(Dungeons.get(), ""));
 
-        Dungeon d = DDataUtils.getDungeon(dungeonCache);
+        Dungeon d = DDataUtils.getDungeon(dungeonID);
         if (d.getOption().isMobGlow()) entity.setGlowing(true);
     }
 
@@ -108,12 +105,14 @@ public class DGuardedTask extends BukkitRunnable {
         if (!isSpawned) return;
         if (!entity.isValid()) {
             // Check Lose Req
-            Dungeon d = DDataUtils.getDungeon(this.dungeonCache);
+            Dungeon d = DDataUtils.getDungeon(this.dungeonID);
             DTurn turn = d.getTurn(status.getTurn());
-            if (turn.getLoseRequirement().getGuardedKilled().equalsIgnoreCase(this.id)) {
-                // Lose turn
-                plugin.getDungeonManager().lose(dungeonCache);
-                Lang.DUNGEON_LOSE_GUARDED_DEATH.broadcast("%dungeon%", d.getInfo().getName());;
+            if (turn.getLoseRequirement().getGuardedKilled() != null) {
+                if (turn.getLoseRequirement().getGuardedKilled().equalsIgnoreCase(this.id)) {
+                    // Lose turn
+                    Dungeons.get().getDungeonManager().lose(status.getCache().toID());
+                    Lang.DUNGEON_LOSE_GUARDED_DEATH.broadcast("%dungeon%", d.getInfo().getName());;
+                }
             }
 
             // Cancel task
@@ -158,4 +157,19 @@ public class DGuardedTask extends BukkitRunnable {
         entity.teleport(l);
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public Villager getEntity() {
+        return entity;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public boolean isSpawned() {
+        return isSpawned;
+    }
 }

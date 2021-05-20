@@ -5,6 +5,7 @@ import io.lumine.xikage.mythicmobs.MythicMobs;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.location.DLocation;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
+import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
@@ -22,7 +23,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import java.util.List;
 
 public enum CType {
-	
+
 	OPPLAYERCMD {
 		@Override
 		public void execute(String cmd, Player player) {
@@ -128,18 +129,30 @@ public enum CType {
 				le.setMetadata("commandKilled", new FixedMetadataValue(Dungeons.get(), ""));
 				le.remove();
 			});
-			if (s.getTurnStatus().getGuarded() != null) s.getTurnStatus().getGuarded().remove();
 			player.getWorld().getEntities().forEach(entity -> {
 				if (entity instanceof Item) return;
 				if (MythicMobs.inst().getMobManager().getAllMythicEntities().contains(entity))  {
 					entity.remove();
 				}
 			});
+			if (s.getTurnStatus().getGuarded() != null) {
+				int currentTurn = s.getTurn();
+				var cacheID = Dungeons.get().getDungeonManager().getCurrentDungeonCache(player);
+				var status = Dungeons.get().getDungeonManager().getStatus(cacheID);
+				String id = status.getCache().getDungeonID();
+				if (!DGameUtils.isLastTurn(id, currentTurn)) {
+					int nextTurn = currentTurn + 1;
+					var turn = DDataUtils.getDungeon(id).getTurn(currentTurn);
+					DTurn turnNext = DDataUtils.getDungeon(id).getTurn(nextTurn);
+					if (!turnNext.getSpawn().getGuarded().isGuardedNull() && turnNext.getSpawn().getGuarded().getGuarded().equals(turn.getSpawn().getGuarded().getGuarded())) return;
+				}
+			}
+			if (s.getTurnStatus().getGuarded() != null) s.getTurnStatus().getGuarded().remove();
 		}
 	};
-	
-	private CType() {}
-	
+
+	CType() {}
+
 	public abstract void execute(String cmd, Player player);
-	
+
 }

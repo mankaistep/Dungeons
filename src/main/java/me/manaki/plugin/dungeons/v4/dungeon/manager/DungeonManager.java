@@ -139,7 +139,7 @@ public class DungeonManager {
                 });
 
                 // Start turn
-                start(dungeonCache.toID(), 1);
+                start(dungeonCache.toID(), 1, null);
 
                 // Featherboard
                 for (UUID uuid : players) {
@@ -153,7 +153,7 @@ public class DungeonManager {
         }.runTaskTimer(plugin, 0, 10);
     }
 
-    public void startNextTurn(String dungeonCache) {
+    public void startNextTurn(String dungeonCache, DGuardedTask guardTask) {
         var status = getStatus(dungeonCache);
         int turn = status.getTurn();
 
@@ -163,10 +163,10 @@ public class DungeonManager {
         }
 
         // Start next
-        else start(dungeonCache, turn + 1);
+        else start(dungeonCache, turn + 1, guardTask);
     }
 
-    public void start(String dungeonCache, int turn) {
+    public void start(String dungeonCache, int turn,  DGuardedTask guardTask) {
         var ds = getStatus(dungeonCache);
         var world = ds.getCache().getWorldCache().toWorld();
         var dungeonID = ds.getCache().getDungeonID();
@@ -184,7 +184,7 @@ public class DungeonManager {
             spawnBlockBreaks(dungeonCache, turn);
             spawnMobs(dungeonCache, turn);
             spawnSlaves(dungeonCache, turn);
-            spawnGuarded(dungeonCache, turn);
+            spawnGuarded(dungeonCache, turn, guardTask);
         }, dturn.getSpawn().getDelay());
     }
 
@@ -218,10 +218,12 @@ public class DungeonManager {
         }
         finally {
             // Clear tasks
+            DGuardedTask guardedTask = null;
             for (BukkitRunnable btask : status.getTasks()) {
-                if (btask instanceof DMobTask || btask instanceof DSlaveTask || btask instanceof DGuardedTask) {
+                if (btask instanceof DMobTask || btask instanceof DSlaveTask) {
                     btask.cancel();
                 }
+                else if (btask instanceof DGuardedTask) guardedTask = (DGuardedTask) btask;
             }
 
             // New status
@@ -229,10 +231,11 @@ public class DungeonManager {
 
             // Check next
             if (DGameUtils.isLastTurn(dungeonID, turn)) {
+                if (guardedTask != null) guardedTask.cancel();
                 task.cancel();
                 win(dungeonCache);
             }
-            else startNextTurn(dungeonCache);
+            else startNextTurn(dungeonCache, guardedTask);
         }
     }
 
@@ -242,7 +245,7 @@ public class DungeonManager {
         var d = DDataUtils.getDungeon(dungeonID);
         var world = status.getCache().getWorldCache().toWorld();
 
-        Lang.DUNGEON_WIN.broadcast();
+        Lang.DUNGEON_WIN.broadcast("%dungeon%", d.getInfo().getName());
 
         try {
             // Check players
@@ -318,13 +321,12 @@ public class DungeonManager {
                 List<Player> players = inDungeonFilter(remainPlayers, dungeonID);
                 if (System.currentTimeMillis() - start >= 60000 || players.size() == 0) {
                     // Back to spawn
-                    players.forEach(player -> {
-                        player.teleport(Utils.getPlayerSpawn());
-                    });
+                    //                        player.teleport(Utils.getPlayerSpawn());
+                    players.forEach(Utils::toSpawn);
 
                     Tasks.async(() -> {
                         // Remove temporary world
-                        plugin.getWorldLoader().unload(Utils.getPlayerSpawn(), status.getCache().getWorldCache().toWorldName(), true);
+                        plugin.getWorldLoader().unload(status.getCache().getWorldCache().toWorldName(), true);
                     });
 
                     // Remove caches
@@ -428,7 +430,7 @@ public class DungeonManager {
         });
     }
 
-    public void spawnGuarded(String dungeonCache, int turn) {
+    public void spawnGuarded(String dungeonCache, int turn, DGuardedTask guardedTask) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
         var t = DGameUtils.getTurn(dungeonID, turn);
@@ -436,6 +438,15 @@ public class DungeonManager {
         var world = status.getCache().getWorldCache().toWorld();
         TSGuarded guard = t.getSpawn().getGuarded();
         if (guard.getGuarded() == null) return;
+        if (guardedTask != null && guardedTask.getId().equalsIgnoreCase(guard.getGuarded())) {
+            status.addTask(guardedTask);
+            status.getTurnStatus().setGuarded(guardedTask.getEntity());
+
+            return;
+        }
+        if (guardedTask != null) status.cancelTask(guardedTask);
+        if (guard.isGuardedNull()) return;
+
 
         DLocation dl = d.getLocation(guard.getLocation());
         Location l = dl.getLocation(world);
@@ -473,7 +484,7 @@ public class DungeonManager {
 
         if (bb != null) bb.removePlayer(player);
         sd.removePlayer(player);
-        if (toSpawn) player.teleport(Utils.getPlayerSpawn());
+        if (toSpawn) Utils.toSpawn(player);
         Lang.DUNGEON_PLAYER_KICK.send(player);
 
         featherBoardCheck(player, true);
@@ -498,7 +509,7 @@ public class DungeonManager {
             BossBar bb = sd.getBossBar();
             if (bb != null) bb.removePlayer(player);
             sd.removePlayer(player);
-            if (teleport) player.teleport(Utils.getPlayerSpawn());
+            if (teleport) Utils.toSpawn(player);
             sd.getPlayers().forEach(uuid -> {
                 Player p = Bukkit.getPlayer(uuid);
                 Lang.DUNGEON_PLAYER_DEAD_KICK_OTHER.send(p, "%player%", "" + player.getName());

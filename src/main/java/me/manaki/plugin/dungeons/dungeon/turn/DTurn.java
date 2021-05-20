@@ -140,8 +140,8 @@ public class DTurn extends Configable {
 		// Chests
 		this.chests.forEach(chest -> {
 			config.set(path + ".chest." + chest.getLocation() + ".chance", chest.getChance());
-			config.set(path + ".chest." + chest.getLocation() + ".commands", chest.getCommands());
 			config.set(path + ".chest." + chest.getLocation() + ".rank", chest.getRank().name());
+			config.set(path + ".chest." + chest.getLocation() + ".commands", chest.getCommands());
 		});
 	}
 	

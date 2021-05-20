@@ -2,6 +2,7 @@ package me.manaki.plugin.dungeons.v4.world;
 
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.util.Tasks;
+import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -98,7 +99,7 @@ public class WorldLoader {
                 return null;
             }
             else if (Bukkit.getWorld(name) != null) {
-                unload(null, name, isAsync);
+                unload(name, isAsync);
                 plugin.getLogger().info("World " + name + " exists -> Unload");
             }
 
@@ -142,7 +143,7 @@ public class WorldLoader {
                 }
             }
             catch (Exception e) {
-                unload(null, name, isAsync);
+                unload(name, isAsync);
                 plugin.getLogger().info("It seems like there is an exception intefere it from loading");
                 plugin.getLogger().info("Unloaded world " + name);
                 e.printStackTrace();
@@ -162,14 +163,14 @@ public class WorldLoader {
         return cache;
     }
 
-    public void unload(Location spawn, String worldName, boolean isAsync) {
+    public void unload(String worldName, boolean isAsync) {
         // Unload
         var world = Bukkit.getWorld(worldName);
         if (world == null) return;
 
         // Check player
         for (Player player : world.getPlayers()) {
-            player.teleport(spawn);
+            Utils.toSpawn(player);
         }
 
         // Unload async

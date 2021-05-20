@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,11 +107,7 @@ public class Utils {
 		}
 		return newL;
 	}
-	
-	public static Location getPlayerSpawn() {
-		return ((EssentialsSpawn) Bukkit.getPluginManager().getPlugin("EssentialsSpawn")).getSpawn("default");
-	}
-	
+
 	public static String getFormat(int second) {
 		String s = "";
 		int minute = second / 60;
@@ -189,6 +186,10 @@ public class Utils {
 		var dy = dl.getY() - l.getY();
 		var dz = dl.getZ() - l.getZ();
 		return Math.sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
+	public static void toSpawn(Player player) {
+		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
 	}
 	
 }

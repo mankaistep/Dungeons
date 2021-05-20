@@ -162,8 +162,9 @@ public class Dungeon extends Configable {
 
 		this.turns = Lists.newArrayList();
 		int i = 1;
-		while (config.contains(path + ".turn.t" + i)) {
-			this.turns.add(new DTurn(config, path + ".turn.t" + i));
+		while (config.contains(path + ".turn.t" + i) || config.contains(path + ".turn." + i)) {
+			var turnpath = config.contains(path + ".turn.t" + i) ? path + ".turn.t" + i : path + ".turn." + i;
+			this.turns.add(new DTurn(config, turnpath));
 			i++;
 		}
 
@@ -197,12 +198,13 @@ public class Dungeon extends Configable {
 			dl.add(drop.toString());
 		});
 		config.set(path + ".drop", dl);
-		
-		for (int i = 0 ; i < turns.size() ; i++) {
-			turns.get(i).save(config, path + ".turn.t" + (i + 1));
-		}
-		
+
 		config.set(path + ".check-points", this.checkPoints);
+
+		for (int i = 0 ; i < turns.size() ; i++) {
+			turns.get(i).save(config, path + ".turn." + (i + 1));
+		}
+
 	}
 
 	public static Dungeon get(String id) {

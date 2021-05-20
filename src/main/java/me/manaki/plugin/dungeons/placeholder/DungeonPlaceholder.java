@@ -2,6 +2,7 @@ package me.manaki.plugin.dungeons.placeholder;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.buff.Buff;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.player.DPlayer;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
@@ -52,16 +53,28 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
 
     @Override
     public String onPlaceholderRequest(Player player, String s){
-        if (!DPlayerUtils.isInDungeon(player)) return "DUNGEON NULL";
-        String dungeonCache = DPlayerUtils.getCurrentDungeonCache(player);
 
-        var status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
-        var dungeonID = status.getCache().getDungeonID();
-        Dungeon d = Dungeon.get(dungeonID);
+        if (s.equalsIgnoreCase("buff_drop")) {
+            var buff = Buff.DROP * 100;
+            DPlayer dp = DPlayer.from(player);
+            buff += dp.getDropRateBuff();
+            return buff + "%";
+        }
+        else if (s.equalsIgnoreCase("buff_revive")) {
+            DPlayer dp = DPlayer.from(player);
+            return dp.getReviveBuff() + "";
+        }
+
+        if (!DPlayerUtils.isInDungeon(player)) return "no dungeon";
+
+        var cacheID = Dungeons.get().getDungeonManager().getCurrentDungeonCache(player);
+        var status = Dungeons.get().getDungeonManager().getStatus(cacheID);
+        String id = status.getCache().getDungeonID();
+        Dungeon d = Dungeon.get(id);
         DTurn turn = d.getTurn(status.getTurn());
 
         String o = turn.getObjective();
-        List<String> objective = Utils.toList(o, 23, "");
+        List<String> objective = Utils.toList(o, 20, "");
 
         if (s.equalsIgnoreCase("name")) {
             return d.getInfo().getName();
@@ -96,13 +109,13 @@ public class DungeonPlaceholder extends PlaceholderExpansion  {
             return  d.getRule().getRespawnTime() + DPlayer.from(player).getReviveBuff() + "";
         }
         else if (s.equalsIgnoreCase("turn_mob_left")) {
-            return status.getTurnStatus().getMobToKills().size() + "";
+            return (DGameUtils.countMobs(d.getTurn(status.getTurn())) - status.getTurnStatus().getStatistic().getMobKilled()) + "";
         }
         else if (s.equalsIgnoreCase("turn_mob_max")) {
             return DGameUtils.countMobs(d.getTurn(status.getTurn())) + "";
         }
         else if (s.equalsIgnoreCase("turn_slave_left")) {
-            return status.getTurnStatus().getSlaveToSaves().size() + "";
+            return (DGameUtils.countSlaves(d.getTurn(status.getTurn())) - status.getTurnStatus().getStatistic().getSlaveSaved()) + "";
         }
         else if (s.equalsIgnoreCase("turn_slave_max")) {
             return DGameUtils.countSlaves(d.getTurn(status.getTurn())) + "";
