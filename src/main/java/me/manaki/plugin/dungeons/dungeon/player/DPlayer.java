@@ -8,6 +8,7 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class DPlayer {
 	
@@ -38,13 +39,15 @@ public class DPlayer {
 	public static DPlayer from(Player p) {
 		double dr = 0;
 		int rb = 0;
-		if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
-			User user = LuckPermsProvider.get().getUserManager().getUser(p.getUniqueId());
-			for (Node node : Lists.newArrayList(user.getNodes())) {
-				if (node.getKey().contains(DROP_RATE_PERM)) dr = Math.max(dr, Double.valueOf(node.getKey().replace(DROP_RATE_PERM, "")));
-				if (node.getKey().contains(REVIVE_RATE_PERM)) rb = Math.max(rb, Integer.valueOf(node.getKey().replace(REVIVE_RATE_PERM, "")));
+
+		if (p != null) {
+			for (PermissionAttachmentInfo perm : p.getEffectivePermissions()) {
+				var node = perm.getPermission();
+				if (node.contains(DROP_RATE_PERM)) dr = Math.max(dr, Double.parseDouble(node.replace(DROP_RATE_PERM, "")));
+				if (node.contains(REVIVE_RATE_PERM)) rb = Math.max(rb, Integer.parseInt(node.replace(REVIVE_RATE_PERM, "")));
 			}
 		}
+
 		return new DPlayer(dr, rb);
 	}
 	
