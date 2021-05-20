@@ -83,7 +83,7 @@ public class DGameEnds {
 		DStatus status = DGameUtils.getStatus(id);
 		Dungeon d = DDataUtils.getDungeon(id);
 		
-		Lang.DUNGEON_WIN.broadcast();
+		Lang.DUNGEON_WIN.broadcast("%dungeon%", d.getInfo().getName());
 		
 		// Check players
 		status.getPlayers().forEach(uuid -> {
