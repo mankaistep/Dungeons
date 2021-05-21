@@ -6,6 +6,7 @@ import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.command.Command;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.block.DBlock;
+import me.manaki.plugin.dungeons.dungeon.difficulty.Difficulty;
 import me.manaki.plugin.dungeons.dungeon.event.DungeonFinishEvent;
 import me.manaki.plugin.dungeons.dungeon.event.DungeonStartEvent;
 import me.manaki.plugin.dungeons.dungeon.location.DLocation;
@@ -15,7 +16,6 @@ import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.status.DungeonResult;
 import me.manaki.plugin.dungeons.dungeon.task.*;
-import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.turn.TSGuarded;
 import me.manaki.plugin.dungeons.dungeon.turn.status.TStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
@@ -26,7 +26,6 @@ import me.manaki.plugin.dungeons.util.Tasks;
 import me.manaki.plugin.dungeons.util.Utils;
 import me.manaki.plugin.dungeons.v4.dungeon.cache.DungeonCache;
 import me.manaki.plugin.dungeons.v4.world.WorldCache;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -35,7 +34,6 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -71,7 +69,7 @@ public class DungeonManager {
         this.statuses.remove(status);
     }
 
-    public void start(String dungeonID, List<UUID> players) {
+    public void start(String dungeonID, Difficulty difficulty, List<UUID> players) {
         // Remove offline players and set not flying
         for (UUID uuid : players) {
             Player player = Bukkit.getPlayer(uuid);
@@ -111,13 +109,16 @@ public class DungeonManager {
                 this.cancel();
 
                 // Create status
-                var dungeonCache = new DungeonCache(dungeonID, finalWorldCache);
+                var dungeonCache = new DungeonCache(dungeonID, difficulty, finalWorldCache);
                 var bossbar = Dungeons.get().featherBoard == null ? Bukkit.createBossBar("§c§l" + dungeon.getInfo().getName() + " §f§l" + Utils.getFormat(dungeon.getOption().getMaxTime()), BarColor.GREEN, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC) : null;
                 var status = new DStatus(dungeonCache, System.currentTimeMillis(), players, bossbar);
                 var turnstatus = new TStatus();
                 status.setTurnStatus(turnstatus);
                 if (bossbar != null) players.forEach(uuid -> bossbar.addPlayer(Objects.requireNonNull(Bukkit.getPlayer(uuid))));
                 statuses.add(status);
+
+                // Spawn block
+                spawnBlocks(dungeonID, dungeonCache.getWorldCache().toWorld());
 
                 // Teleport to first check-point
                 // Have to wait till world loaded
@@ -254,9 +255,10 @@ public class DungeonManager {
                 // Check requirements
                 DRewardReq rr = d.getRewardReq();
                 if (DGameUtils.canGetReward(dungeonID, status.getStatistic(uuid), rr)) {
-                    d.getRewards().forEach(s -> {
+                    Difficulty difficulty = status.getCache().getDifficulty();
+                    for (String s : d.getReward().getReward(difficulty)) {
                         new Command(s).execute(player);
-                    });
+                    }
                 }
             });
         }

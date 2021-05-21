@@ -144,7 +144,7 @@ public class WorldLoader {
             }
             catch (Exception e) {
                 unload(name, isAsync);
-                plugin.getLogger().warning("It seems like there is an exception intefere it from loading");
+                plugin.getLogger().warning("It seems like there is an exception interfere it from loading");
                 plugin.getLogger().warning("Unloaded world " + name);
                 e.printStackTrace();
             }

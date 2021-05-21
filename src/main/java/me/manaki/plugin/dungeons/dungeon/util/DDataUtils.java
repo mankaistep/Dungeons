@@ -140,9 +140,12 @@ public class DDataUtils {
 		for (DTurn t : d.getTurns()) {
 			for (TSMob tsm : t.getSpawn().getMobs()) {
 				String id = tsm.getMob();
-				if (!MythicMobs.inst().getMobManager().getMobNames().contains(id)) {
-					Utils.log("[Dungeon3] Mob id \"" + tsm.getMob() + "\" is wrong!");
-					return false;
+				var mythicmobIDList = d.getMobs(id);
+				for (String mmid : mythicmobIDList) {
+					if (!MythicMobs.inst().getMobManager().getMobNames().contains(mmid)) {
+						Utils.log("[Dungeon3] Mob id \"" + mmid + "\" is wrong!");
+						return false;
+					}
 				}
 			}
 		}

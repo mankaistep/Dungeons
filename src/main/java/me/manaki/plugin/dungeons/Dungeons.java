@@ -13,8 +13,6 @@ import me.manaki.plugin.dungeons.listener.PlayerListener;
 import me.manaki.plugin.dungeons.plugincommand.AdminPluginCommand;
 import me.manaki.plugin.dungeons.plugincommand.PlayerPluginCommand;
 import me.manaki.plugin.dungeons.placeholder.DungeonPlaceholder;
-import me.manaki.plugin.dungeons.queue.DQueueTask;
-import me.manaki.plugin.dungeons.queue.DQueues;
 import me.manaki.plugin.dungeons.rank.Rank;
 import me.manaki.plugin.dungeons.slave.Slaves;
 import me.manaki.plugin.dungeons.task.DMoneyCoinTask;
@@ -88,7 +86,6 @@ public class Dungeons extends JavaPlugin {
 			} else this.featherBoard = null;
 		} else this.featherBoard = null;
 
-		this.createQueues();
 		this.registerTasks();
 	}
 	
@@ -106,16 +103,8 @@ public class Dungeons extends JavaPlugin {
 	}
 	
 	public void registerTasks() {
-		new DQueueTask().runTaskTimerAsynchronously(this, 0, 100);
 	}
-	
-	public void createQueues() {
-		DDataUtils.getDungeons().forEach((id, dungeon) -> {
-			if (!DGameUtils.isPlaying(id) && !DQueues.hasQueue(id)) {
-				DQueues.newQueue(id);
-			}
-		});
-	}
+
 	
 	public void hookPlugins() {
 		if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {

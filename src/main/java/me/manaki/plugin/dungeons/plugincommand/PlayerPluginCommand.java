@@ -2,7 +2,6 @@ package me.manaki.plugin.dungeons.plugincommand;
 
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
-import me.manaki.plugin.dungeons.queue.DQueueGUI;
 import me.manaki.plugin.dungeons.votekick.KickVotes;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -58,7 +57,7 @@ public class PlayerPluginCommand implements CommandExecutor {
 			}
 		}
 		
-		else DQueueGUI.openGUI(player);
+
 		
 		return false;
 	}

@@ -4,13 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
+import me.manaki.plugin.dungeons.dungeon.difficulty.Difficulty;
 import me.manaki.plugin.dungeons.dungeon.moneycoin.DMoneyCoin;
 import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.turn.TSMob;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
-import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
-import me.manaki.plugin.dungeons.queue.DQueues;
 import me.manaki.plugin.dungeons.ticket.Tickets;
 import me.manaki.plugin.dungeons.util.Utils;
 import net.md_5.bungee.api.ChatColor;
@@ -53,19 +52,13 @@ public class AdminPluginCommand implements CommandExecutor {
 			else if (args[0].equalsIgnoreCase("start")) {
 				Player player = (Player) sender;
 				String id = args[1];
+				Difficulty dct = null;
 				List<UUID> list = Lists.newArrayList(player.getUniqueId());
 				if (args.length > 2) {
-					for (int i = 2 ; i < args.length ; i++) list.add(Bukkit.getPlayerUniqueId(args[i]));
+					dct = Difficulty.valueOf(args[2].toUpperCase());
 				}
 				if (DDataUtils.checkProblem(id)) {
-					if (DQueues.hasQueue(id)) {
-						DQueues.remove(id);
-					}
-					if (DGameUtils.isPlaying(id)) {
-						plugin.getDungeonManager().lose(id);
-					}
-					plugin.getDungeonManager().start(id, list);
-					DQueues.doStart(id);
+					plugin.getDungeonManager().start(id, dct, list);
 				}
 			}
 			

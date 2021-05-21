@@ -20,6 +20,7 @@ public class WorldListener implements Listener {
             if (w.getName().startsWith(s)) {
                 plugin.getLogger().warning("Detect temporary world " + w.getName());
                 w.setKeepSpawnInMemory(false);
+                w.setAutoSave(false);
             }
         }
     }

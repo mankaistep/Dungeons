@@ -71,7 +71,10 @@ public class DMobTask extends BukkitRunnable {
 	}
 
 	public void spawn() {
-		ActiveMob activeMob = MythicMobs.inst().getMobManager().spawnMob(mobID, loc);
+		var d = DDataUtils.getDungeon(dungeon);
+		var dct = status.getCache().getDifficulty();
+		var mythicmobID = d.getMob(this.mobID, dct);
+		ActiveMob activeMob = MythicMobs.inst().getMobManager().spawnMob(mythicmobID, loc);
 		LivingEntity le = (LivingEntity) activeMob.getEntity().getBukkitEntity();
 		le.setRemoveWhenFarAway(false);
 		this.mob = le;
@@ -82,7 +85,6 @@ public class DMobTask extends BukkitRunnable {
 		le.setRemoveWhenFarAway(false);
 		le.setMetadata("Dungeon3", new FixedMetadataValue(Dungeons.get(), this.mobID));
 
-		Dungeon d = DDataUtils.getDungeon(dungeon);
 		if (d.getOption().isMobGlow())
 			le.setGlowing(true);
 	}
