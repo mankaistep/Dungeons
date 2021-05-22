@@ -1,6 +1,7 @@
 package me.manaki.plugin.dungeons.dungeon.info;
 
 import me.manaki.plugin.dungeons.configable.Configable;
+import me.manaki.plugin.dungeons.dungeon.icon.DIcon;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.List;
@@ -10,6 +11,7 @@ public class DInfo extends Configable {
 	private String name;
 	private String desc;
 	private String world;
+	private DIcon icon;
 	
 	public DInfo(FileConfiguration config, String path) {
 		super(config, path);
@@ -33,11 +35,16 @@ public class DInfo extends Configable {
 		return world;
 	}
 
+	public DIcon getIcon() {
+		return icon;
+	}
+
 	@Override
 	public void load(FileConfiguration config, String path) {
 		this.name = config.getString(path + ".name");
 		this.desc = config.getString(path + ".desc");
 		this.world = config.getString(path + ".world");
+		this.icon = new DIcon(config, path + ".icon");
 	}
 
 	@Override
@@ -45,6 +52,7 @@ public class DInfo extends Configable {
 		config.set(path + ".name", name);
 		config.set(path + ".desc", desc);
 		config.set(path + ".world", world);
+		this.icon.save(config, path + ".icon");
 	}
 	
 }

@@ -2,6 +2,7 @@ info:
   name: Đảo xanh
   desc: Dungeon cơ bản dành cho người mới bắt đầu
   world: world_dungeon_1
+  icon: STONE;0
 option:
   max-time: 3600
   player: '1:5'

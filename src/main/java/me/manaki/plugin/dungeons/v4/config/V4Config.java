@@ -14,11 +14,15 @@ public class V4Config {
 
     private final Dungeons plugin;
     
-    private Map<String, WorldTemplate> worldTemplates; 
-    
+    private Map<String, WorldTemplate> worldTemplates;
+    private int roomCountdown;
+    private int removeRoomCountdown;
+
     public V4Config(Dungeons plugin) {
         this.plugin = plugin;
         this.worldTemplates = new HashMap<>();
+        this.roomCountdown = 30;
+        this.removeRoomCountdown = 5;
     }
     
     public void reload() {
@@ -35,6 +39,10 @@ public class V4Config {
             var generator = getter.getString(".generator");
             worldTemplates.put(world, new WorldTemplate(world, seed, environment, type, generator));
         }
+
+        roomCountdown = config.getInt("room-count-down");
+
+        removeRoomCountdown = config.getInt("remove-room-count-down");
     }
 
     public WorldTemplate getWorldTemplate(String id) {
@@ -43,5 +51,13 @@ public class V4Config {
 
     public Map<String, WorldTemplate> getWorldTemplates() {
         return worldTemplates;
+    }
+
+    public int getRoomCountdown() {
+        return roomCountdown;
+    }
+
+    public int getRemoveRoomCountdown() {
+        return removeRoomCountdown;
     }
 }

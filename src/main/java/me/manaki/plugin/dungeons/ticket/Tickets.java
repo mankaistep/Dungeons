@@ -11,40 +11,40 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class Tickets {
-	
+
 	private static ItemStack PATTERN;
-	
+
 	public static void init(FileConfiguration config) {
 		PATTERN = ItemBuilder.buildItem(config.getConfigurationSection("ticket.item"));
 	}
-	
+
 	public static ItemStack getTicket(String id) {
-		Dungeon d = DDataUtils.getDungeon(id);
-		String name = d.getInfo().getName();
-		
 		ItemStack is = PATTERN.clone();
 		ItemMeta meta = is.getItemMeta();
-		meta.setDisplayName(meta.getDisplayName().replace("%dungeon_name%", name));
+		String name = null;
+		if (!id.equalsIgnoreCase("*")) {
+			Dungeon d = DDataUtils.getDungeon(id);
+			name = d.getInfo().getName();
+			meta.setDisplayName(meta.getDisplayName().replace("%dungeon_name%", name));
+		}
+
 		is.setItemMeta(meta);
-		
+
 		return ItemStackUtils.setTag(is, "dungeon3.ticket", id);
 	}
-	
-	public static boolean isTicket(ItemStack is) {
-		return ItemStackUtils.hasTag(is, "dungeon3.ticket");
-	}
-	
+
 	public static boolean isTicket(ItemStack is, String id) {
-		if (!isTicket(is)) return false;
+		if (!ItemStackUtils.hasTag(is, "dungeon3.ticket")) return false;
 		String tid = getDungeon(is);
-		return id.equalsIgnoreCase(tid);
+		return tid.equalsIgnoreCase("*") || id.equalsIgnoreCase(tid);
 	}
-	
-	public static String getDungeon(ItemStack ticket) {
+
+	private static String getDungeon(ItemStack ticket) {
 		return ItemStackUtils.getTag(ticket, "dungeon3.ticket");
 	}
-	
-	public static boolean takeOne(Player p) {
+
+	public static boolean takeOne(Player p, String dungeonID) {
+		if (!has(p, dungeonID)) return false;
 		PlayerInventory inv = p.getInventory();
 
 		int count = 1;
@@ -55,7 +55,7 @@ public class Tickets {
 				break;
 			if (i == null)
 				continue;
-			if (isTicket(i)) {
+			if (isTicket(i, dungeonID)) {
 				if (i.getAmount() > count) {
 					i.setAmount(i.getAmount() - count);
 					count = 0;
@@ -65,10 +65,10 @@ public class Tickets {
 				}
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	public static int count(Player player, String id) {
 		int count = 0;
 		PlayerInventory inv = player.getInventory();
@@ -81,12 +81,12 @@ public class Tickets {
 		}
 		return count;
 	}
-	
-	public static boolean contains(Player player, int amount, String id) {
+
+	public static boolean has(Player player, String id) {
 		int count = count(player, id);
-		return count >= amount;
+		return count >= 1;
 	}
-	
-	
-	
+
+
+
 }

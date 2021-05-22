@@ -38,6 +38,17 @@ public class PlayerListener implements Listener {
 		this.plugin = plugin;
 	}
 
+	// Quit
+	@EventHandler
+	public void onQuit(PlayerQuitEvent e) {
+		var player = e.getPlayer();
+		var rm = plugin.getRoomManager();
+		int roomID = rm.getCurrentRoom(player);
+		if (roomID == -1) return;
+		var room = rm.getRoom(roomID);
+		room.removePlayer(player);
+	}
+
 	/*
 	 * Vote kick
 	 */

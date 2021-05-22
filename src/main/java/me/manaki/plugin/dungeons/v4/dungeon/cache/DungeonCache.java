@@ -30,7 +30,8 @@ public class DungeonCache {
     }
 
     public String toID() {
-        return this.getDungeonID() + " " + this.difficulty.name() + " " + worldCache.toWorldName();
+        var dct = this.difficulty == null ? "null" : this.difficulty.name();
+        return this.getDungeonID() + " " + dct + " " + worldCache.toWorldName();
     }
 
     public static DungeonCache parse(String id) {

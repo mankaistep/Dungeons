@@ -12,6 +12,9 @@
 # [showrank]
 # Rank: S, A, B, C, D, F
 
+room-count-down: 60
+remove-room-count-down: 5
+
 world:
   world_template_1:
     # NORMAL/NETHER/THE_END
@@ -93,3 +96,58 @@ guarded:
    color: 3
    health: 30
    target-radius: 10
+
+gui:
+  size: 27
+  background:
+    slots: [1, 10, 19]
+    item:
+      name: '&f'
+      type: GLASS_PANE
+      data: 21
+      lore: []
+      enchant: []
+      flag: []
+  tutorial:
+    slot: 0
+    item:
+      name: '&a&lPhó bản (Dungeon) là gì ?'
+      type: GLASS_PANE
+      data: 25
+      lore:
+        - ''
+        - '&f&oLà nơi bạn chiến đấu với quái vật, '
+        - '&f&otừ đó nhận được các phần quà'
+        - '&f&otùy thuộc vào các phó bản'
+        - ''
+        - '&f&oĐể tham gia phó bản, bạn phải '
+        - '&f&ođợi người tham gia trước kết thúc '
+        - '&f&orồi bạn mới có thể vào'
+        - ''
+        - '&f&oMột số phó bản yêu cầu &6Vé Phó bản'
+        - '&f&ovà bạn có thể mua ở cửa hàng'
+      enchant: []
+      flag: []
+  info:
+    slot: 9
+    item:
+      name: '&a&lThông tin của bạn'
+      type: GLASS_PANE
+      data: 8
+      lore:
+        - '&6Buff tỉ lệ rơi đồ: &e%dungeon_buff_drop%'
+        - '&6Buff hồi sinh: &e%dungeon_buff_revive% lượt'
+        - '&6Vượt phó bản: &e%sora_dungeon_win_times% lần'
+        - '&6Thua phó bản: &e%sora_dungeon_lose_times% lần'
+        - '&6Hạ gục: &e%sora_dungeon_mob_killed% quái'
+      enchant: []
+      flag: []
+  quit:
+    slot: 18
+    item:
+      name: '&c&lThoát'
+      type: GLASS_PANE
+      data: 24
+      lore: []
+      enchant: []
+      flag: []

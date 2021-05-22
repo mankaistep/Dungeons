@@ -2,6 +2,7 @@ package me.manaki.plugin.dungeons.util;
 
 import com.earth2me.essentials.spawn.EssentialsSpawn;
 import com.google.common.collect.Lists;
+import io.lumine.xikage.mythicmobs.items.ItemManager;
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.location.DLocation;
 import org.bukkit.Bukkit;
@@ -12,6 +13,7 @@ import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +22,12 @@ import java.util.Map.Entry;
 
 public class Utils {
 
+	public static ItemStack getBackIcon() {
+		var is = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+		var ism = new ItemStackManager(is);
+		ism.setName("§f");
+		return is;
+	}
 
 	public static Entity getNearest(Location l, double r, EntityType type) {
 		double min = Double.MAX_VALUE;

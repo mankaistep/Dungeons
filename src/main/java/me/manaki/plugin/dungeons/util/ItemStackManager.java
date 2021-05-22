@@ -1,6 +1,7 @@
 package me.manaki.plugin.dungeons.util;
 
 import com.google.common.collect.Maps;
+import me.manaki.plugin.dungeons.Dungeons;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -21,6 +22,7 @@ public class ItemStackManager {
     public ItemStackManager(ItemStack is) {
         this.is = is;
         this.meta = isNull() ? null : is.getItemMeta();
+        this.plugin = Dungeons.get();
     }
 
     public ItemStackManager(Plugin plugin, ItemStack is) {

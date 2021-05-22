@@ -14,8 +14,11 @@ import me.manaki.plugin.dungeons.plugincommand.AdminPluginCommand;
 import me.manaki.plugin.dungeons.plugincommand.PlayerPluginCommand;
 import me.manaki.plugin.dungeons.placeholder.DungeonPlaceholder;
 import me.manaki.plugin.dungeons.rank.Rank;
+import me.manaki.plugin.dungeons.room.RoomManager;
+import me.manaki.plugin.dungeons.room.gui.DungeonSelectGUI;
 import me.manaki.plugin.dungeons.slave.Slaves;
 import me.manaki.plugin.dungeons.task.DMoneyCoinTask;
+import me.manaki.plugin.dungeons.task.RoomTask;
 import me.manaki.plugin.dungeons.ticket.Tickets;
 import me.manaki.plugin.dungeons.util.Utils;
 import me.manaki.plugin.dungeons.v4.config.V4Config;
@@ -36,6 +39,7 @@ public class Dungeons extends JavaPlugin {
 	private WorldLoader worldLoader;
 	private WorldManager worldManager;
 	private DungeonManager dungeonManager;
+	private RoomManager roomManager;
 
 	@Override
 	public void onEnable() {
@@ -49,6 +53,7 @@ public class Dungeons extends JavaPlugin {
 		this.worldLoader = new WorldLoader(this);
 		this.worldManager = new WorldManager(this);
 		this.dungeonManager = new DungeonManager(this);
+		this.roomManager = new RoomManager(this);
 
 		// WorldGuard
 		this.v4Config.reload();
@@ -77,6 +82,7 @@ public class Dungeons extends JavaPlugin {
 		Tickets.init(YamlFile.CONFIG.get());
 		Slaves.reload(YamlFile.CONFIG.get());
 		Guardeds.reload(YamlFile.CONFIG.get());
+		DungeonSelectGUI.load(YamlFile.CONFIG.get());
 		this.v4Config.reload();
 
 		// Featherboard
@@ -103,6 +109,7 @@ public class Dungeons extends JavaPlugin {
 	}
 	
 	public void registerTasks() {
+		RoomTask.start(this);
 	}
 
 	
@@ -130,6 +137,10 @@ public class Dungeons extends JavaPlugin {
 
 	public DungeonManager getDungeonManager() {
 		return dungeonManager;
+	}
+
+	public RoomManager getRoomManager() {
+		return roomManager;
 	}
 
 	public static Dungeons getPlugin() {
