@@ -17,12 +17,14 @@ public class V4Config {
     private Map<String, WorldTemplate> worldTemplates;
     private int roomCountdown;
     private int removeRoomCountdown;
+    private int worldLastTime;
 
     public V4Config(Dungeons plugin) {
         this.plugin = plugin;
         this.worldTemplates = new HashMap<>();
         this.roomCountdown = 30;
         this.removeRoomCountdown = 5;
+        this.worldLastTime = 3600;
     }
     
     public void reload() {
@@ -41,8 +43,8 @@ public class V4Config {
         }
 
         roomCountdown = config.getInt("room-count-down");
-
         removeRoomCountdown = config.getInt("remove-room-count-down");
+        worldLastTime = config.getInt("world-last-time");
     }
 
     public WorldTemplate getWorldTemplate(String id) {
@@ -59,5 +61,9 @@ public class V4Config {
 
     public int getRemoveRoomCountdown() {
         return removeRoomCountdown;
+    }
+
+    public int getWorldLastTime() {
+        return worldLastTime;
     }
 }

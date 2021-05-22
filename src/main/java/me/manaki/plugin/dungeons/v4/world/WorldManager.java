@@ -12,35 +12,23 @@ public class WorldManager {
 
     private final Dungeons plugin;
 
-    private final Map<String, List<WorldCache>> activeWorlds;
+    private final List<WorldCache> activeWorlds;
 
     public WorldManager(Dungeons plugin) {
         this.plugin = plugin;
-        this.activeWorlds = new HashMap<>();
-    }
-
-    public List<WorldCache> getActiveWorlds(String dungeonID) {
-        return activeWorlds.getOrDefault(dungeonID, new ArrayList<>());
+        this.activeWorlds = new ArrayList<>();
     }
 
     public List<String> getActiveWorldNames(String dungeonID) {
-        return activeWorlds.getOrDefault(dungeonID, new ArrayList<>()).stream().map(w -> w.toWorldName()).collect(Collectors.toList());
+        return activeWorlds.stream().map(WorldCache::toWorldName).collect(Collectors.toList());
     }
 
-    public Map<String, List<WorldCache>> getActiveWorlds() {
-        return activeWorlds;
+    public void addActiveWorld(WorldCache cache) {
+        activeWorlds.add(cache);
     }
 
-    public void addActiveWorld(String dungeonID, WorldCache cache) {
-        var list = getActiveWorlds(dungeonID);
-        list.add(cache);
-        activeWorlds.put(dungeonID, list);
-    }
-
-    public void removeActiveWorld(String dungeonID, WorldCache cache) {
-        var list = getActiveWorlds(dungeonID);
-        list.remove(cache);
-        activeWorlds.put(dungeonID, list);
+    public void removeActiveWorld(WorldCache cache) { ;
+        activeWorlds.remove(cache);
     }
 
 }

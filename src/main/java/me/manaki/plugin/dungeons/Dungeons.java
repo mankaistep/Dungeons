@@ -3,16 +3,15 @@ package me.manaki.plugin.dungeons;
 import me.manaki.plugin.dungeons.buff.Buff;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
-import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.guarded.Guardeds;
 import me.manaki.plugin.dungeons.lang.Lang;
 import me.manaki.plugin.dungeons.listener.DungeonListener;
 import me.manaki.plugin.dungeons.listener.EntityListener;
 import me.manaki.plugin.dungeons.listener.GUIListener;
 import me.manaki.plugin.dungeons.listener.PlayerListener;
+import me.manaki.plugin.dungeons.placeholder.DungeonPlaceholder;
 import me.manaki.plugin.dungeons.plugincommand.AdminPluginCommand;
 import me.manaki.plugin.dungeons.plugincommand.PlayerPluginCommand;
-import me.manaki.plugin.dungeons.placeholder.DungeonPlaceholder;
 import me.manaki.plugin.dungeons.rank.Rank;
 import me.manaki.plugin.dungeons.room.RoomManager;
 import me.manaki.plugin.dungeons.room.gui.DungeonSelectGUI;
@@ -26,6 +25,7 @@ import me.manaki.plugin.dungeons.v4.dungeon.manager.DungeonManager;
 import me.manaki.plugin.dungeons.v4.world.WorldListener;
 import me.manaki.plugin.dungeons.v4.world.WorldLoader;
 import me.manaki.plugin.dungeons.v4.world.WorldManager;
+import me.manaki.plugin.dungeons.v4.world.WorldTask;
 import me.manaki.plugin.dungeons.yaml.YamlFile;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -68,6 +68,9 @@ public class Dungeons extends JavaPlugin {
 		for (DStatus status : this.getDungeonManager().getStatuses()) {
 			this.getDungeonManager().lose(status.getCache().toID());
 		}
+
+		// Remove all temporary worlds
+		this.getWorldLoader().unloadAllTemporaryWorlds(false);
 	}
 	
 	@Override
@@ -110,8 +113,8 @@ public class Dungeons extends JavaPlugin {
 	
 	public void registerTasks() {
 		RoomTask.start(this);
+		WorldTask.start(this);
 	}
-
 	
 	public void hookPlugins() {
 		if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {

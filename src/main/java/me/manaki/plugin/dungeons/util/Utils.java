@@ -210,7 +210,7 @@ public class Utils {
 		for (File file : files) {
 			var name = file.getName();
 			for (String world : plugin.getV4Config().getWorldTemplates().keySet()) {
-				if (name.contains(world + "_") && !name.equals(world)) {
+				if (name.startsWith(world)) {
 					try {
 						FileUtils.deleteDirectory(file);
 					} catch (IOException e) {

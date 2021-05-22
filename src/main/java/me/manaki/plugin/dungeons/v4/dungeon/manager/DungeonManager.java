@@ -88,14 +88,14 @@ public class DungeonManager {
         var loader = plugin.getWorldLoader();
         WorldCache worldCache = null;
         try {
-            worldCache = loader.load(worldTemplate, false, true);
+            worldCache = loader.load(worldTemplate, true, true);
         }
         catch (Exception e) {
             plugin.getLogger().warning("Exception appeared when world is being loaded");
             e.printStackTrace();
             return;
         }
-        plugin.getWorldManager().addActiveWorld(dungeonID, worldCache);
+        plugin.getWorldManager().addActiveWorld(worldCache);
 
         // Wait to do
         WorldCache finalWorldCache = worldCache;
@@ -326,13 +326,17 @@ public class DungeonManager {
                     // player.teleport(Utils.getPlayerSpawn());
                     players.forEach(Utils::toSpawn);
 
+                    // Clear entities
+                    clearEntities(dungeonID, world);
+
                     Tasks.async(() -> {
-                        // Remove temporary world
-                        plugin.getWorldLoader().unload(status.getCache().getWorldCache().toWorldName(), true);
+                        // Add pending cache
+                        plugin.getWorldLoader().addPendingCache(status.getCache().getWorldCache());
+//                        plugin.getWorldLoader().unload(status.getCache().getWorldCache().toWorldName(), true);
                     });
 
                     // Remove caches
-                    plugin.getWorldManager().removeActiveWorld(dungeonID, status.getCache().getWorldCache());
+//                    plugin.getWorldManager().removeActiveWorld( status.getCache().getWorldCache());
                     removeStatus(status);
                     this.cancel();
                     return;

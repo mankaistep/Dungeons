@@ -12,6 +12,7 @@
 # [showrank]
 # Rank: S, A, B, C, D, F
 
+world-last-time: 3600
 room-count-down: 60
 remove-room-count-down: 5
 
