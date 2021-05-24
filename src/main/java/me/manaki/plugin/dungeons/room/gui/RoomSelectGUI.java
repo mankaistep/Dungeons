@@ -95,6 +95,7 @@ public class RoomSelectGUI {
 
             // Join
             if (status == RoomStatus.CAN_JOIN) {
+                if (d.getOption().isTicketRequired()) Tickets.takeOne(player, dungeonID);
                 room.addPlayer(player);
             }
 
