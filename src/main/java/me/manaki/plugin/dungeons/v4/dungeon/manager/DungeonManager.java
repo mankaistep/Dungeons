@@ -148,6 +148,18 @@ public class DungeonManager {
                     featherBoardCheck(p, false);
                 }
 
+                // Sound
+                var soundPlay = plugin.getV4Config().getSoundPlay("on-start-dungeon");
+                if (soundPlay == null) {
+                    plugin.getLogger().warning("Dungeon start sound null!");
+                }
+                else {
+                    for (UUID uuid : status.getPlayers()) {
+                        var player = Bukkit.getPlayer(uuid);
+                        status.playSound(player, soundPlay, true);
+                    }
+                }
+
                 // Event
                 Bukkit.getPluginManager().callEvent(new DungeonStartEvent(dungeonID));
             }
@@ -248,6 +260,18 @@ public class DungeonManager {
 
         Lang.DUNGEON_WIN.broadcast("%dungeon%", d.getInfo().getName());
 
+        // Sound
+        var soundPlay = plugin.getV4Config().getSoundPlay("on-win-dungeon");
+        if (soundPlay == null) {
+            plugin.getLogger().warning("Dungeon win sound null!");
+        }
+        else {
+            for (UUID uuid : status.getPlayers()) {
+                var player = Bukkit.getPlayer(uuid);
+                status.playSound(player, soundPlay, true);
+            }
+        }
+
         try {
             // Check players
             status.getPlayers().forEach(uuid -> {
@@ -337,6 +361,7 @@ public class DungeonManager {
 
                     // Remove caches
 //                    plugin.getWorldManager().removeActiveWorld( status.getCache().getWorldCache());
+                    status.stopAllSounds();
                     removeStatus(status);
                     this.cancel();
                     return;
@@ -492,6 +517,9 @@ public class DungeonManager {
         sd.removePlayer(player);
         if (toSpawn) Utils.toSpawn(player);
         Lang.DUNGEON_PLAYER_KICK.send(player);
+
+        // Stop sound
+        sd.stopSound(player);
 
         featherBoardCheck(player, true);
     }

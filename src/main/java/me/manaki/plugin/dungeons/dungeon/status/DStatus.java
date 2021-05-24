@@ -4,19 +4,19 @@ import be.maximvdw.featherboard.W;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.turn.status.TStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.sound.DSoundPlay;
+import me.manaki.plugin.dungeons.sound.DSoundThread;
 import me.manaki.plugin.dungeons.v4.dungeon.cache.DungeonCache;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class DStatus {
 
@@ -35,6 +35,7 @@ public class DStatus {
 
 	// V4
 	private DungeonCache cache;
+	private Map<Player, DSoundThread> currentSounds;
 	
 	public DStatus(DungeonCache cache, long start, List<UUID> players, BossBar bossbar) {
 		this.cache = cache;
@@ -52,6 +53,7 @@ public class DStatus {
 		this.isPlaying = true;
 		this.openedChests = Maps.newHashMap();
 		this.checkPoint = DDataUtils.getDungeon(cache.getDungeonID()).getCheckPoints().get(0);
+		this.currentSounds = Maps.newConcurrentMap();
 	}
 
 	public DungeonCache getCache() {
@@ -175,5 +177,32 @@ public class DStatus {
 		this.tasks.add(except);
 	}
 
+	public void stopSound(Player player) {
+		if (!this.currentSounds.containsKey(player)) return;
+		this.currentSounds.get(player).stopSound();
+		this.currentSounds.remove(player);
+	}
+
+	public void stopAllSounds() {
+		for (Map.Entry<Player, DSoundThread> e : this.currentSounds.entrySet()) {
+			e.getValue().stopSound();
+		}
+	}
+
+	public void playSound(Player player, DSoundPlay soundPlay, boolean override) {
+		if (this.currentSounds.containsKey(player) && !override) return;
+
+		if (currentSounds.containsKey(player)) {
+			var sthread = currentSounds.get(player);
+			sthread.stopSound();
+		}
+		var sound = Dungeons.get().getV4Config().getSound(soundPlay.getSounds().get(new Random().nextInt(soundPlay.getSounds().size())));
+		var sthread = new DSoundThread(player, sound, soundPlay.getTimes());
+		currentSounds.put(player, sthread);
+		if (soundPlay.getDelay() != 0) {
+			Bukkit.getScheduler().runTaskLaterAsynchronously(Dungeons.get(), sthread::start, soundPlay.getDelay());
+		}
+		else sthread.start();
+	}
 
 }

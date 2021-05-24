@@ -1,6 +1,9 @@
 package me.manaki.plugin.dungeons.v4.config;
 
+import com.google.common.collect.Maps;
 import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.sound.DSound;
+import me.manaki.plugin.dungeons.sound.DSoundPlay;
 import me.manaki.plugin.dungeons.v4.world.WorldTemplate;
 import org.bukkit.World;
 import org.bukkit.WorldType;
@@ -19,12 +22,17 @@ public class V4Config {
     private int removeRoomCountdown;
     private int worldLastTime;
 
+    private Map<String, DSound> sounds;
+    private Map<String, DSoundPlay> soundPlays;
+
     public V4Config(Dungeons plugin) {
         this.plugin = plugin;
         this.worldTemplates = new HashMap<>();
         this.roomCountdown = 30;
         this.removeRoomCountdown = 5;
         this.worldLastTime = 3600;
+        this.soundPlays = Maps.newConcurrentMap();
+        this.sounds = Maps.newConcurrentMap();
     }
     
     public void reload() {
@@ -42,9 +50,30 @@ public class V4Config {
             worldTemplates.put(world, new WorldTemplate(world, seed, environment, type, generator));
         }
 
-        roomCountdown = config.getInt("room-count-down");
-        removeRoomCountdown = config.getInt("remove-room-count-down");
-        worldLastTime = config.getInt("world-last-time");
+        // Room
+        roomCountdown = config.getInt("room.room-count-down");
+        removeRoomCountdown = config.getInt("room.remove-room-count-down");
+        worldLastTime = config.getInt("room.world-last-time");
+
+        // Sound
+        this.sounds.clear();
+        for (String id : config.getConfigurationSection("sounds").getKeys(false)) {
+            var source = config.getString("sounds." + id + ".source");
+            long length = config.getLong("sounds." + id + ".length");
+            var sound = new DSound(id, source, length);
+            this.sounds.put(id, sound);
+        }
+
+        // Sound play
+        this.soundPlays.clear();;
+        for (String id : config.getConfigurationSection("sound-play").getKeys(false)) {
+            int delay = config.getInt("sound-play." + id + ".delay");
+            int times = config.getInt("sound-play." + id + ".play-times");
+            var sounds = config.getStringList("sound-play." + id + ".sounds");
+            var sp = new DSoundPlay(delay, times, sounds);
+            this.soundPlays.put(id, sp);
+        }
+
     }
 
     public WorldTemplate getWorldTemplate(String id) {
@@ -65,5 +94,21 @@ public class V4Config {
 
     public int getWorldLastTime() {
         return worldLastTime;
+    }
+
+    public DSound getSound(String id) {
+        return getSounds().getOrDefault(id, null);
+    }
+
+    public Map<String, DSound> getSounds() {
+        return sounds;
+    }
+
+    public DSoundPlay getSoundPlay(String event) {
+        return soundPlays.getOrDefault(event, null);
+    }
+
+    public Map<String, DSoundPlay> getSoundPlays() {
+        return soundPlays;
     }
 }

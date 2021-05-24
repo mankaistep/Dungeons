@@ -227,6 +227,7 @@ public class Dungeon extends Configable {
 
 		config.set(path + ".check-points", this.checkPoints);
 
+		config.set(path + ".turn", null);
 		for (int i = 0 ; i < turns.size() ; i++) {
 			turns.get(i).save(config, path + ".turn." + (i + 1));
 		}

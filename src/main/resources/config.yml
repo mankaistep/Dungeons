@@ -12,9 +12,73 @@
 # [showrank]
 # Rank: S, A, B, C, D, F
 
-world-last-time: 3600
-room-count-down: 60
-remove-room-count-down: 5
+sound-play:
+  on-resourcepack-load:
+    delay: 0
+    play-times: 3
+    sounds:
+      - theme1
+  on-start-dungeon:
+    delay: 10
+    play-times: -1
+    sounds:
+      - background1
+      - background2
+      - background3
+      - background4
+      - background5
+      - background6
+      - background7
+      - background8
+  on-win-dungeon:
+    delay: 0
+    play-times: 1
+    sounds:
+      - victory1
+      - victory2
+      - victory3
+sounds:
+  background1:
+    source: 'dungeon.background.1'
+    length: 15484
+  background2:
+    source: 'dungeon.background.2'
+    length: 10105
+  background3:
+    source: 'dungeon.background.3'
+    length: 21333
+  background4:
+    source: 'dungeon.background.4'
+    length: 13091
+  background5:
+    source: 'dungeon.background.5'
+    length: 20426
+  background6:
+    source: 'dungeon.background.6'
+    length: 13241
+  background7:
+    source: 'dungeon.background.7'
+    length: 16000
+  background8:
+    source: 'dungeon.background.8'
+    length: 12000
+  theme1:
+    source: 'dungeon.theme.1'
+    length: 20211
+  victory1:
+    source: 'dungeon.victory.1'
+    length: 7416
+  victory2:
+    source: 'dungeon.victory.2'
+    length: 8332
+  victory3:
+    source: 'dungeon.victory.3'
+    length: 4000
+
+room:
+  world-last-time: 3600
+  room-count-down: 60
+  remove-room-count-down: 5
 
 world:
   world_template_1:
