@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class WorldLoader {
 
-    private static final String PATH = "worlds";
+    public static final String PATH = "worlds";
 
     private final Dungeons plugin;
 
@@ -204,6 +204,10 @@ public class WorldLoader {
     }
 
     public void unload(String worldName, boolean isAsync) {
+        unload(worldName, isAsync, true, false);
+    }
+
+    public void unload(String worldName, boolean isAsync, boolean remove, boolean save) {
         // Unload
         var world = Bukkit.getWorld(worldName);
         if (world == null) return;
@@ -218,7 +222,7 @@ public class WorldLoader {
             // Async unload bukkit world
             long start = System.currentTimeMillis();
             plugin.getLogger().warning("Unloading world " + worldName + "... (from async task)");
-            Bukkit.unloadWorld(world, false);
+            Bukkit.unloadWorld(world, save);
             Bukkit.getWorlds().remove(world);
             plugin.getLogger().warning("Unloaded world " + worldName + "!");
             plugin.getLogger().warning("Took " + (System.currentTimeMillis() - start) + "ms");
@@ -234,13 +238,13 @@ public class WorldLoader {
         else {
             long start = System.currentTimeMillis();
             plugin.getLogger().info("Unloading world " + worldName + "...");
-            Bukkit.unloadWorld(world, false);
+            Bukkit.unloadWorld(world, save);
             Bukkit.getWorlds().remove(world);
             plugin.getLogger().info("Unloaded world " + worldName + "!");
             plugin.getLogger().info("Took " + (System.currentTimeMillis() - start) + "ms");
 
             // Delete file
-            deleteTemporaryWorld(worldName);
+            if (remove) deleteTemporaryWorld(worldName);
         }
     }
 

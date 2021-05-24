@@ -5,6 +5,7 @@ import org.bukkit.GameRule;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.world.WorldSaveEvent;
 
 public class WorldListener implements Listener {
 
@@ -19,7 +20,7 @@ public class WorldListener implements Listener {
         var w = e.getWorld();
         for (String s : plugin.getV4Config().getWorldTemplates().keySet()) {
             if (w.getName().startsWith(s)) {
-                plugin.getLogger().warning("Detect temporary world " + w.getName());
+                plugin.getLogger().warning("Detect temporary world load " + w.getName());
                 w.setKeepSpawnInMemory(false);
                 w.setAutoSave(false);
                 w.setGameRule(GameRule.DISABLE_RAIDS, true);

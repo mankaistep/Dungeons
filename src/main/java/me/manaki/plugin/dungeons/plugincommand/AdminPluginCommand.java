@@ -11,14 +11,18 @@ import me.manaki.plugin.dungeons.dungeon.turn.TSMob;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import me.manaki.plugin.dungeons.ticket.Tickets;
+import me.manaki.plugin.dungeons.util.Tasks;
 import me.manaki.plugin.dungeons.util.Utils;
+import me.manaki.plugin.dungeons.v4.world.WorldLoader;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -135,9 +139,105 @@ public class AdminPluginCommand implements CommandExecutor {
 				});
 				sender.sendMessage("Oke");
 			}
-			
-		}
-		catch (ArrayIndexOutOfBoundsException e) {
+
+			else if (args[0].equalsIgnoreCase("tp")) {
+				var world = args[1];
+				var dungeonID = args[2];
+				var lid = args[3];
+				var d = DDataUtils.getDungeon(dungeonID);
+				var l = d.getLocation(lid).getLocation(Bukkit.getWorld(world));
+				var player = (Player) sender;
+				player.teleport(l);
+			}
+
+			else if (args[0].equalsIgnoreCase("editmap")) {
+				var world = args[1];
+
+				// Load world
+				if (Bukkit.getWorld(world) != null) return false;
+
+				var creator = new WorldCreator(world);
+				var tempWorldFolder = new File(Bukkit.getWorldContainer() + "//" + world);
+				var sourceWorld = new File(plugin.getDataFolder() + "//" + WorldLoader.PATH + "//" + world);
+				if (!sourceWorld.exists()) {
+					plugin.getLogger().warning(sourceWorld.getName() + " world doesnt exist!");
+					return false;
+				}
+
+				// Remove uid.dat file
+				var uiddatfile = new File(sourceWorld, "uid.dat");
+				if (uiddatfile.exists()) {
+					try {
+						FileUtils.forceDelete(uiddatfile);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				// Remove and create folder
+				FileUtils.deleteDirectory(tempWorldFolder);
+				tempWorldFolder.mkdirs();
+				FileUtils.copyDirectory(sourceWorld, tempWorldFolder);
+
+				try {
+					// Load and add cache
+					long start = System.currentTimeMillis();
+					plugin.getLogger().warning("Loading world " + world + "... (from async task)");
+					creator.createWorld();
+					plugin.getLogger().warning("Loaded world " + world + "!");
+					plugin.getLogger().warning("Took " + (System.currentTimeMillis() - start) + "ms");
+				}
+				catch (Exception e) {
+					plugin.getWorldLoader().unload(world, true);
+					plugin.getLogger().warning("It seems like there is an exception interfere it from loading");
+					plugin.getLogger().warning("Unloaded world " + world);
+					e.printStackTrace();
+				}
+
+				// Done
+				sender.sendMessage("§aDone!");
+				sender.sendMessage("§aUse /d3 tp " + world + " <dungeon> <dlocation>");
+			}
+
+			else if (args[0].equalsIgnoreCase("savemap")) {
+				var world = args[1];
+
+				// Load world
+				if (Bukkit.getWorld(world) != null) {
+					plugin.getWorldLoader().unload(world, false, false, true);
+				}
+
+				// Save world
+				var tempWorldFolder = new File(Bukkit.getWorldContainer() + "//" + world);
+				var sourceWorld = new File(plugin.getDataFolder() + "//" + WorldLoader.PATH + "//" + world);
+				if (!sourceWorld.exists()) {
+					plugin.getLogger().warning(sourceWorld.getName() + " world doesnt exist!");
+					return false;
+				}
+
+				// Remove uid.dat file
+				var uiddatfile = new File(tempWorldFolder, "uid.dat");
+				if (uiddatfile.exists()) {
+					try {
+						FileUtils.forceDelete(uiddatfile);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				// Remove and create folder
+				FileUtils.deleteDirectory(sourceWorld);
+				sourceWorld.mkdirs();
+				FileUtils.copyDirectory(tempWorldFolder, sourceWorld);
+				FileUtils.deleteDirectory(tempWorldFolder);
+
+				// Done
+				sender.sendMessage("§aDone!");
+			}
+
+	}
+		catch (ArrayIndexOutOfBoundsException | IOException e) {
+			e.printStackTrace();
 			sendTut(sender);
 		}
 		
@@ -155,15 +255,15 @@ public class AdminPluginCommand implements CommandExecutor {
 		m.add(Utils.c("&2/dungeon3 start <dungeon>: &aStart dungeon only you"));
 		m.add(Utils.c("&2/dungeon3 setblock <dungeon> <id>: &aSet block of dungeon"));
 		m.add(Utils.c("&2/dungeon3 setlocation <dungeon> <radius> <id>: &aSet location of dungeon"));	
-		m.add(Utils.c("&2/dungeon3 tp <dungeon> <locationID>: &aTeleport"));
+		m.add(Utils.c("&2/dungeon3 tp <world> <dungeon> <locationID>: &aTeleport"));
 		m.add(Utils.c("&2/dungeon3 count <mobID> <dungeon>: &aCount amount of mobs"));
 		m.add(Utils.c("&2/dungeon3 getticket <dungeon>: &aGet ticket of <dungeon>"));
 		m.add(Utils.c("&2/dungeon3 dropmoney <value>: &aDrop money coin"));
+		m.add(Utils.c("&2/dungeon3 editmap <world>: &aEdit map"));
+		m.add(Utils.c("&2/dungeon3 savemap <world>: &aEdit map"));
 		m.add("");
 		
-		m.forEach(s -> {
-			sender.sendMessage(s);
-		});
+		m.forEach(sender::sendMessage);
 	}
 
 }
