@@ -191,6 +191,21 @@ public class DungeonManager {
         // Run commands
         runStartCommands(dungeonCache, turn);
 
+        // If last turn
+        if (DGameUtils.isLastTurn(ds.getCache().getDungeonID(), turn)) {
+            // Sound
+            var soundPlay = plugin.getV4Config().getSoundPlay("on-boss-dungeon");
+            if (soundPlay == null) {
+                plugin.getLogger().warning("Dungeon boss sound null!");
+            }
+            else {
+                for (UUID uuid : ds.getPlayers()) {
+                    var player = Bukkit.getPlayer(uuid);
+                    ds.playSound(player, soundPlay, true);
+                }
+            }
+        }
+
         // Spawn
         Bukkit.getScheduler().runTaskLater(Dungeons.get(), () -> {
             if (!isPlaying(dungeonCache)) return;
