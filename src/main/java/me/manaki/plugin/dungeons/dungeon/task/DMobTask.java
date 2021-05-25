@@ -5,6 +5,7 @@ import io.lumine.xikage.mythicmobs.mobs.ActiveMob;
 import me.manaki.plugin.dungeons.dungeon.event.DungeonMobKilledEvent;
 import me.manaki.plugin.dungeons.dungeon.moneycoin.DMoneyCoin;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.util.Tasks;
 import me.manaki.plugin.shops.storage.ItemStorage;
 import me.manaki.plugin.dungeons.buff.Buff;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
@@ -13,15 +14,18 @@ import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.util.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
 public class DMobTask extends BukkitRunnable {
+
+	private final int SPAWN_DELAY_TICK = 30;
 
 	private String dungeon;
 	private String mobID;
@@ -35,7 +39,7 @@ public class DMobTask extends BukkitRunnable {
 		this.mobID = mobID;
 		this.status = status;
 		this.isSpawned = false;
-		this.loc = loc;
+		this.loc = loc.getBlock().getLocation().add(0.5, 0, 0.5);
 		this.runTaskTimer(Dungeons.get(), 0, 20);
 	}
 
@@ -54,8 +58,9 @@ public class DMobTask extends BukkitRunnable {
 	}
 
 	public void checkSpawn() {
-		if (isSpawned)
-			return;
+		if (isSpawned) return;
+
+		// Has near player
 		boolean hasPlayerNear = false;
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			if (player.getWorld() == loc.getWorld()) {
@@ -65,9 +70,17 @@ public class DMobTask extends BukkitRunnable {
 				}
 			}
 		}
-		if (hasPlayerNear) {
-			spawn();
-		}
+		if (!hasPlayerNear) return;
+
+		// Current maxmobs
+		var d = DDataUtils.getDungeon(dungeon);
+		int maxmobs = d.getTurn(status.getTurn()).getMaxMobs();
+		if (status.getTurnStatus().getCurrentMobs() >= maxmobs) return;
+
+		// Spawn
+		status.getTurnStatus().addCurrentMobs(1);
+		Tasks.async(this::playReadyEffect, 0, 4, this.SPAWN_DELAY_TICK * 50L);
+		Bukkit.getScheduler().runTaskLater(Dungeons.get(), this::spawn, this.SPAWN_DELAY_TICK);
 	}
 
 	public void spawn() {
@@ -87,6 +100,13 @@ public class DMobTask extends BukkitRunnable {
 
 		if (d.getOption().isMobGlow())
 			le.setGlowing(true);
+
+		for (UUID uuid : status.getPlayers()) {
+			var player = Bukkit.getPlayer(uuid);
+			if (player == null) continue;
+			player.playSound(le.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
+			player.spawnParticle(Particle.PORTAL, le.getLocation(), 20, 0.3f, 0.3f, 0.3f, 0.5);
+		}
 	}
 
 	public void checkLocation() {
@@ -128,6 +148,7 @@ public class DMobTask extends BukkitRunnable {
 			if (mob.hasMetadata("commandKilled")) return;
 
 			status.getTurnStatus().removeMobToKill(mob);
+			status.getTurnStatus().removeCurrentMobs(1);
 
 			// Turn
 			status.getTurnStatus().getStatistic().addMobKilled(1);
@@ -206,6 +227,29 @@ public class DMobTask extends BukkitRunnable {
 			});
 
 
+		}
+	}
+
+	private void playReadyEffect() {
+		var lShow = Utils.getGroundBlock(loc.clone()).add(0, 1.2, 0);
+		circleParticles(new Particle.DustOptions(Color.PURPLE, 1), lShow, 1);
+	}
+
+	private void circleParticles(Particle.DustOptions doo, Location location, double radius) {
+		int amount = new Double(radius * 20).intValue();
+		double increment = (2 * Math.PI) / amount;
+		ArrayList<Location> locations = new ArrayList<Location>();
+
+		for (int i = 0; i < amount; i++) {
+			double angle = i * increment;
+			double x = location.getX() + (radius * Math.cos(angle));
+			double z = location.getZ() + (radius * Math.sin(angle));
+			locations.add(new Location(location.getWorld(), x, location.getY(), z));
+		}
+
+		for (Location l : locations) {
+//        	ParticleAPI.sendParticle(e, l, 0, 0, 0, 0, 1);
+			location.getWorld().spawnParticle(Particle.REDSTONE, l, 1, 0, 0, 0, 0, doo);
 		}
 	}
 

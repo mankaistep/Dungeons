@@ -221,5 +221,15 @@ public class Utils {
 			}
 		}
 	}
+
+	public static Location getGroundBlock(Location loc) {
+		Location locBelow = loc.clone();
+		if (locBelow.getY() <= -64) return locBelow;
+		if(locBelow.getBlock().getType() == Material.AIR) {
+			locBelow = loc.subtract(0, 1, 0);
+			locBelow = getGroundBlock(locBelow);
+		}
+		return locBelow;
+	}
 	
 }

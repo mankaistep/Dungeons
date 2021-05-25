@@ -14,12 +14,15 @@ public class TStatus {
 	private Map<LivingEntity, String> mobToKills;
 	private List<LivingEntity> slaveToSaves;
 	private DStatistic statistic;
-	
+
+	private int currentMobs;
+
 	public TStatus() {
 		this.guarded = null;
 		this.mobToKills = Maps.newHashMap();
 		this.slaveToSaves = Lists.newArrayList();
 		this.statistic = new DStatistic();
+		this.currentMobs = 0;
 	}
 	
 	public Map<LivingEntity, String> getMobToKills() {
@@ -60,5 +63,17 @@ public class TStatus {
 
 	public LivingEntity getGuarded() {
 		return guarded;
+	}
+
+	public void addCurrentMobs(int amount) {
+		this.currentMobs += amount;
+	}
+
+	public void removeCurrentMobs(int amount) {
+		this.currentMobs -= amount;
+	}
+
+	public int getCurrentMobs() {
+		return currentMobs;
 	}
 }
