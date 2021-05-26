@@ -31,7 +31,7 @@ public class DSoundThread extends Thread {
     public void run() {
         if (this.running) return;
         this.running = true;
-        while (running && (loop == -1 || count < loop)) {
+        while (player != null && running && (loop == -1 || count < loop)) {
             count++;
             player.playSound(player.getLocation(), sound.getSource(), 100, 1);
             try {

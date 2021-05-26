@@ -66,6 +66,7 @@ public class Dungeons extends JavaPlugin {
 	public void onDisable() {
 		// Quit dungeons
 		for (DStatus status : this.getDungeonManager().getStatuses()) {
+			status.stopAllSounds();
 			this.getDungeonManager().lose(status.getCache().toID());
 		}
 

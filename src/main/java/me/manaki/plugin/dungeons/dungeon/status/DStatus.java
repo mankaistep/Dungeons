@@ -187,6 +187,7 @@ public class DStatus {
 		for (Map.Entry<Player, DSoundThread> e : this.currentSounds.entrySet()) {
 			e.getValue().stopSound();
 		}
+		this.currentSounds.clear();
 	}
 
 	public void playSound(Player player, DSoundPlay soundPlay, boolean override) {
