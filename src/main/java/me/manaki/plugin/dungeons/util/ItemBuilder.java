@@ -37,16 +37,17 @@ public class ItemBuilder {
 				meta.addItemFlags(ItemFlag.valueOf(s));
 			});
 		}
-		
+
 		meta.setLore(lore);
 		for (Enchantment en : e.keySet()) {
 			meta.addEnchant(en, e.get(en), true);
 		}
-		
+
 		int data = config.getInt(".data");
-		item.setDurability((short) data);
+//		item.setDurability((short) data);
+		meta.setCustomModelData(data);
 		item.setItemMeta(meta);
-		
+
 		return item;
 	}
 	

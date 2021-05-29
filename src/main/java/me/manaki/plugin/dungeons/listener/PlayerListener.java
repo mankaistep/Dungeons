@@ -8,6 +8,7 @@ import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DSlaveUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
 import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.sound.DSoundThread;
 import me.manaki.plugin.dungeons.util.Utils;
 import me.manaki.plugin.dungeons.votekick.KickVote;
 import me.manaki.plugin.dungeons.votekick.KickVotes;
@@ -29,6 +30,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 public class PlayerListener implements Listener {
 
@@ -36,6 +38,34 @@ public class PlayerListener implements Listener {
 
 	public PlayerListener(Dungeons plugin) {
 		this.plugin = plugin;
+	}
+
+	// Res load
+	@EventHandler
+	public void onResLoad(PlayerResourcePackStatusEvent e) {
+		var player = e.getPlayer();
+		var soundPlay = plugin.getV4Config().getSoundPlay("on-resourcepack-load");
+		if (soundPlay == null) {
+			plugin.getLogger().warning("Resourepack load sound null!");
+			return;
+		}
+		var sound = Dungeons.get().getV4Config().getSound(soundPlay.getSounds().get(new Random().nextInt(soundPlay.getSounds().size())));
+		var sthread = new DSoundThread(player, sound, soundPlay.getTimes());
+		if (soundPlay.getDelay() != 0) {
+			Bukkit.getScheduler().runTaskLaterAsynchronously(Dungeons.get(), sthread::start, soundPlay.getDelay());
+		}
+		else sthread.start();
+	}
+
+	// Quit
+	@EventHandler
+	public void onQuit(PlayerQuitEvent e) {
+		var player = e.getPlayer();
+		var rm = plugin.getRoomManager();
+		int roomID = rm.getCurrentRoom(player);
+		if (roomID == -1) return;
+		var room = rm.getRoom(roomID);
+		room.removePlayer(player);
 	}
 
 	/*

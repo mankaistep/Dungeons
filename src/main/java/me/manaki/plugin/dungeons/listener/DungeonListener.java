@@ -39,7 +39,7 @@ public class DungeonListener implements Listener {
 	@EventHandler
 	public void onChestOpen(PlayerInteractEvent e) {
 		Player player = e.getPlayer();
-		if (!DPlayerUtils.isInDungeonWorld(player)) return;
+		if (!DPlayerUtils.isInDungeon(player)) return;
 		
 		String dungeonCache = DPlayerUtils.getDungeonCachePlayerStandingOn(player);
 		if (dungeonCache == null) return;
@@ -52,13 +52,18 @@ public class DungeonListener implements Listener {
 
 		for (DTurn turn : d.getTurns()) {
 			Block b = e.getClickedBlock();
-			Rank rank = RankUtils.getRank(dungeonID, status.getStatistic(player));
 			if (b != null && b.getType() == Material.CHEST) {
 				Location l = b.getLocation();
 				String lid = DGameUtils.checkLocation(dungeonID, l);
 				if (lid == null) return;
 				if (turn.getChest(lid) == null) return;
-				
+
+				var pstatistic = status.getStatistic(player);
+				if (pstatistic == null) {
+					throw new NullPointerException("PLAYER STATISTIC NULL");
+				}
+				Rank rank = RankUtils.getRank(dungeonID, pstatistic);
+
 				TChest chest = turn.getChest(lid);
 				if (!RankUtils.equalOrBetter(rank, chest.getRank())) return;
 				

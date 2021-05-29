@@ -1,8 +1,8 @@
-package me.manaki.plugin.dungeons.main.command;
+package me.manaki.plugin.dungeons.plugincommand;
 
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
-import me.manaki.plugin.dungeons.queue.DQueueGUI;
+import me.manaki.plugin.dungeons.room.gui.DungeonSelectGUI;
 import me.manaki.plugin.dungeons.votekick.KickVotes;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -57,8 +57,14 @@ public class PlayerPluginCommand implements CommandExecutor {
 				KickVotes.voteKick(DPlayerUtils.getCurrentDungeonCache(player), uuid, player.getUniqueId());
 			}
 		}
-		
-		else DQueueGUI.openGUI(player);
+		else {
+			if (DPlayerUtils.isInDungeon(player)) {
+				player.sendMessage("§cĐang trong phó bản, không thể mở menu");
+				return false;
+			}
+			else DungeonSelectGUI.open(player);
+		}
+
 		
 		return false;
 	}

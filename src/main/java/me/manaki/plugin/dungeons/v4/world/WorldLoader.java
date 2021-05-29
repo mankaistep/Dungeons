@@ -1,7 +1,10 @@
 package me.manaki.plugin.dungeons.v4.world;
 
 import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.dungeon.Dungeon;
+import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.util.Tasks;
+import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -12,23 +15,28 @@ import org.bukkit.plugin.Plugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class WorldLoader {
 
-    private static final String PATH = "worlds";
+    public static final String PATH = "worlds";
 
     private final Dungeons plugin;
 
     private final Map<String, Integer> highestID;
     private final List<WorldCache> caches;
 
-    private Set<String> isLoading;
+    private final Set<String> isLoading;
+
+    private final Map<WorldCache, Long> pendingCaches;
 
     public WorldLoader(Dungeons plugin) {
         this.plugin = plugin;
         this.highestID = new HashMap<>();
         this.caches = new ArrayList<>();
         this.isLoading = new HashSet<>();
+        this.pendingCaches = new ConcurrentHashMap<>();
         this.checkTemplateFolder();
     }
 
@@ -36,8 +44,8 @@ public class WorldLoader {
         return caches;
     }
 
-    public void clearCache(WorldCache cache) {
-        this.caches.remove(cache);
+    public void addPendingCache(WorldCache cache) {
+        this.pendingCaches.put(cache, System.currentTimeMillis());
     }
 
     public int getHighestID(String world) {
@@ -75,15 +83,50 @@ public class WorldLoader {
         return this.isLoading.contains(world);
     }
 
-    public WorldCache load(WorldTemplate template, boolean ignoreExist, boolean isAsync) {
-        // Get and save id
-        var nameid = template.getName();
-        int highestID = this.getHighestID(nameid);
-        int id = highestID + 1;
-        this.setHighestID(nameid, id);
+    public Map<WorldCache, Long> getPendingCaches() {
+        return pendingCaches;
+    }
 
-        // Create cache
-        var cache = new WorldCache(id, template.getName());
+    public void unloadAllTemporaryWorlds(boolean isAsync) {
+        for (String name : Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList())) {
+            boolean is = false;
+            for (Dungeon d : DDataUtils.getDungeons().values()) {
+                if (name.startsWith(d.getInfo().getWorld())) {
+                    is = true;
+                    break;
+                }
+            }
+            if (is) unload(name, isAsync);
+        }
+    }
+
+    public WorldCache load(WorldTemplate template, boolean ignoreExist, boolean isAsync) {
+        // Check if has world cache
+        WorldCache cache = null;
+        for (Map.Entry<WorldCache, Long> e : this.pendingCaches.entrySet()) {
+            var c = e.getKey();
+            if (c.getWorldSource().equals(template.getName())) {
+                cache = c;
+                break;
+            }
+        }
+        if (cache != null) {
+            pendingCaches.remove(cache);
+        }
+        else {
+            // Get and save id
+            var nameid = template.getName();
+            int highestID = this.getHighestID(nameid);
+            int id = highestID + 1;
+            this.setHighestID(nameid, id);
+
+            // Create cache
+            cache = new WorldCache(id, template.getName());
+
+            // Add cache
+            caches.add(cache);
+        }
+
         try {
             // Set loading = true on start
             setLoading(cache.toWorldName(), true);
@@ -94,11 +137,12 @@ public class WorldLoader {
 
             // Check exist
             if (tempWorldFolder.exists() && Bukkit.getWorld(name) != null && ignoreExist) {
+                setLoading(cache.toWorldName(), false);
                 plugin.getLogger().info("World " + name + " exists -> Ignore");
-                return null;
+                return cache;
             }
             else if (Bukkit.getWorld(name) != null) {
-                unload(null, name, isAsync);
+                unload(name, isAsync);
                 plugin.getLogger().info("World " + name + " exists -> Unload");
             }
 
@@ -128,28 +172,25 @@ public class WorldLoader {
                 // Load and add cache
                 if (isAsync) Tasks.sync(() -> {
                     long start = System.currentTimeMillis();
-                    plugin.getLogger().info("Loading world " + name + "... (from async task)");
+                    plugin.getLogger().warning("Loading world " + name + "... (from async task)");
                     creator.createWorld();
-                    plugin.getLogger().info("Loaded world " + name + "!");
-                    plugin.getLogger().info("Took " + (System.currentTimeMillis() - start) + "ms");
+                    plugin.getLogger().warning("Loaded world " + name + "!");
+                    plugin.getLogger().warning("Took " + (System.currentTimeMillis() - start) + "ms");
                 });
                 else {
                     long start = System.currentTimeMillis();
-                    plugin.getLogger().info("Loading world " + name + "...");
+                    plugin.getLogger().warning("Loading world " + name + "...");
                     creator.createWorld();
-                    plugin.getLogger().info("Loaded world " + name + "!");
-                    plugin.getLogger().info("Took " + (System.currentTimeMillis() - start) + "ms");
+                    plugin.getLogger().warning("Loaded world " + name + "!");
+                    plugin.getLogger().warning("Took " + (System.currentTimeMillis() - start) + "ms");
                 }
             }
             catch (Exception e) {
-                unload(null, name, isAsync);
-                plugin.getLogger().info("It seems like there is an exception intefere it from loading");
-                plugin.getLogger().info("Unloaded world " + name);
+                unload(name, isAsync);
+                plugin.getLogger().warning("It seems like there is an exception interfere it from loading");
+                plugin.getLogger().warning("Unloaded world " + name);
                 e.printStackTrace();
             }
-
-            // Add cache
-            caches.add(cache);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -162,25 +203,29 @@ public class WorldLoader {
         return cache;
     }
 
-    public void unload(Location spawn, String worldName, boolean isAsync) {
+    public void unload(String worldName, boolean isAsync) {
+        unload(worldName, isAsync, true, false);
+    }
+
+    public void unload(String worldName, boolean isAsync, boolean remove, boolean save) {
         // Unload
         var world = Bukkit.getWorld(worldName);
         if (world == null) return;
 
         // Check player
         for (Player player : world.getPlayers()) {
-            player.teleport(spawn);
+            Utils.toSpawn(player);
         }
 
         // Unload async
         if (isAsync) Tasks.sync(() -> {
             // Async unload bukkit world
             long start = System.currentTimeMillis();
-            plugin.getLogger().info("Unloading world " + worldName + "... (from async task)");
-            Bukkit.unloadWorld(world, false);
+            plugin.getLogger().warning("Unloading world " + worldName + "... (from async task)");
+            Bukkit.unloadWorld(world, save);
             Bukkit.getWorlds().remove(world);
-            plugin.getLogger().info("Unloaded world " + worldName + "!");
-            plugin.getLogger().info("Took " + (System.currentTimeMillis() - start) + "ms");
+            plugin.getLogger().warning("Unloaded world " + worldName + "!");
+            plugin.getLogger().warning("Took " + (System.currentTimeMillis() - start) + "ms");
 
             // Async I/O
             Tasks.async(() -> {
@@ -193,13 +238,13 @@ public class WorldLoader {
         else {
             long start = System.currentTimeMillis();
             plugin.getLogger().info("Unloading world " + worldName + "...");
-            Bukkit.unloadWorld(world, false);
+            Bukkit.unloadWorld(world, save);
             Bukkit.getWorlds().remove(world);
             plugin.getLogger().info("Unloaded world " + worldName + "!");
             plugin.getLogger().info("Took " + (System.currentTimeMillis() - start) + "ms");
 
             // Delete file
-            deleteTemporaryWorld(worldName);
+            if (remove) deleteTemporaryWorld(worldName);
         }
     }
 

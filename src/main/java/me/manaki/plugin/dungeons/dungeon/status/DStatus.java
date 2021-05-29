@@ -3,18 +3,20 @@ package me.manaki.plugin.dungeons.dungeon.status;
 import be.maximvdw.featherboard.W;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.turn.status.TStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.sound.DSoundPlay;
+import me.manaki.plugin.dungeons.sound.DSoundThread;
 import me.manaki.plugin.dungeons.v4.dungeon.cache.DungeonCache;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class DStatus {
 
@@ -26,13 +28,14 @@ public class DStatus {
 	private BossBar bossbar;	
 	private int turn;
 	private TStatus turnStatus;	
-	private List<BukkitRunnable> tasks;	
+	private Set<BukkitRunnable> tasks;
 	private boolean isPlaying;	
 	private String checkPoint;
 	private Map<UUID, List<String>> openedChests;
 
 	// V4
 	private DungeonCache cache;
+	private Map<Player, DSoundThread> currentSounds;
 	
 	public DStatus(DungeonCache cache, long start, List<UUID> players, BossBar bossbar) {
 		this.cache = cache;
@@ -46,10 +49,11 @@ public class DStatus {
 			this.statistics.put(uuid, new DStatistic());
 		});
 		this.allStatistic = new DStatistic();
-		this.tasks = Lists.newArrayList();
+		this.tasks = Sets.newHashSet();
 		this.isPlaying = true;
 		this.openedChests = Maps.newHashMap();
 		this.checkPoint = DDataUtils.getDungeon(cache.getDungeonID()).getCheckPoints().get(0);
+		this.currentSounds = Maps.newConcurrentMap();
 	}
 
 	public DungeonCache getCache() {
@@ -114,7 +118,7 @@ public class DStatus {
 		return this.isPlaying;
 	}
 	
-	public List<BukkitRunnable> getTasks() {
+	public Set<BukkitRunnable> getTasks() {
 		return this.tasks;
 	}
 	
@@ -158,6 +162,48 @@ public class DStatus {
 
 	public long getStart() {
 		return this.start;
+	}
+
+	public void cancelTask(BukkitRunnable br) {
+		br.cancel();
+		this.tasks.remove(br);
+	}
+
+	public void cancelAllTask(BukkitRunnable except) {
+		for (BukkitRunnable task : this.tasks) {
+			if (task != except) task.cancel();
+		}
+		this.tasks.clear();
+		this.tasks.add(except);
+	}
+
+	public void stopSound(Player player) {
+		if (!this.currentSounds.containsKey(player)) return;
+		this.currentSounds.get(player).stopSound();
+		this.currentSounds.remove(player);
+	}
+
+	public void stopAllSounds() {
+		for (Map.Entry<Player, DSoundThread> e : this.currentSounds.entrySet()) {
+			e.getValue().stopSound();
+		}
+		this.currentSounds.clear();
+	}
+
+	public void playSound(Player player, DSoundPlay soundPlay, boolean override) {
+		if (this.currentSounds.containsKey(player) && !override) return;
+
+		if (currentSounds.containsKey(player)) {
+			var sthread = currentSounds.get(player);
+			sthread.stopSound();
+		}
+		var sound = Dungeons.get().getV4Config().getSound(soundPlay.getSounds().get(new Random().nextInt(soundPlay.getSounds().size())));
+		var sthread = new DSoundThread(player, sound, soundPlay.getTimes());
+		currentSounds.put(player, sthread);
+		if (soundPlay.getDelay() != 0) {
+			Bukkit.getScheduler().runTaskLaterAsynchronously(Dungeons.get(), sthread::start, soundPlay.getDelay());
+		}
+		else sthread.start();
 	}
 
 }

@@ -6,6 +6,7 @@ import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.command.Command;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.block.DBlock;
+import me.manaki.plugin.dungeons.dungeon.difficulty.Difficulty;
 import me.manaki.plugin.dungeons.dungeon.event.DungeonFinishEvent;
 import me.manaki.plugin.dungeons.dungeon.event.DungeonStartEvent;
 import me.manaki.plugin.dungeons.dungeon.location.DLocation;
@@ -15,7 +16,6 @@ import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.status.DungeonResult;
 import me.manaki.plugin.dungeons.dungeon.task.*;
-import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.turn.TSGuarded;
 import me.manaki.plugin.dungeons.dungeon.turn.status.TStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
@@ -26,7 +26,6 @@ import me.manaki.plugin.dungeons.util.Tasks;
 import me.manaki.plugin.dungeons.util.Utils;
 import me.manaki.plugin.dungeons.v4.dungeon.cache.DungeonCache;
 import me.manaki.plugin.dungeons.v4.world.WorldCache;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -35,7 +34,6 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -71,7 +69,7 @@ public class DungeonManager {
         this.statuses.remove(status);
     }
 
-    public void start(String dungeonID, List<UUID> players) {
+    public void start(String dungeonID, Difficulty difficulty, List<UUID> players) {
         // Remove offline players and set not flying
         for (UUID uuid : players) {
             Player player = Bukkit.getPlayer(uuid);
@@ -90,14 +88,14 @@ public class DungeonManager {
         var loader = plugin.getWorldLoader();
         WorldCache worldCache = null;
         try {
-            worldCache = loader.load(worldTemplate, false, true);
+            worldCache = loader.load(worldTemplate, true, true);
         }
         catch (Exception e) {
             plugin.getLogger().warning("Exception appeared when world is being loaded");
             e.printStackTrace();
             return;
         }
-        plugin.getWorldManager().addActiveWorld(dungeonID, worldCache);
+        plugin.getWorldManager().addActiveWorld(worldCache);
 
         // Wait to do
         WorldCache finalWorldCache = worldCache;
@@ -111,13 +109,16 @@ public class DungeonManager {
                 this.cancel();
 
                 // Create status
-                var dungeonCache = new DungeonCache(dungeonID, finalWorldCache);
+                var dungeonCache = new DungeonCache(dungeonID, difficulty, finalWorldCache);
                 var bossbar = Dungeons.get().featherBoard == null ? Bukkit.createBossBar("§c§l" + dungeon.getInfo().getName() + " §f§l" + Utils.getFormat(dungeon.getOption().getMaxTime()), BarColor.GREEN, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC) : null;
                 var status = new DStatus(dungeonCache, System.currentTimeMillis(), players, bossbar);
                 var turnstatus = new TStatus();
                 status.setTurnStatus(turnstatus);
                 if (bossbar != null) players.forEach(uuid -> bossbar.addPlayer(Objects.requireNonNull(Bukkit.getPlayer(uuid))));
                 statuses.add(status);
+
+                // Spawn block
+                spawnBlocks(dungeonID, dungeonCache.getWorldCache().toWorld());
 
                 // Teleport to first check-point
                 // Have to wait till world loaded
@@ -139,12 +140,24 @@ public class DungeonManager {
                 });
 
                 // Start turn
-                start(dungeonCache.toID(), 1);
+                start(dungeonCache.toID(), 1, null);
 
                 // Featherboard
                 for (UUID uuid : players) {
                     Player p = Bukkit.getPlayer(uuid);
                     featherBoardCheck(p, false);
+                }
+
+                // Sound
+                var soundPlay = plugin.getV4Config().getSoundPlay("on-start-dungeon");
+                if (soundPlay == null) {
+                    plugin.getLogger().warning("Dungeon start sound null!");
+                }
+                else {
+                    for (UUID uuid : status.getPlayers()) {
+                        var player = Bukkit.getPlayer(uuid);
+                        status.playSound(player, soundPlay, true);
+                    }
                 }
 
                 // Event
@@ -153,7 +166,7 @@ public class DungeonManager {
         }.runTaskTimer(plugin, 0, 10);
     }
 
-    public void startNextTurn(String dungeonCache) {
+    public void startNextTurn(String dungeonCache, DGuardedTask guardTask) {
         var status = getStatus(dungeonCache);
         int turn = status.getTurn();
 
@@ -163,10 +176,10 @@ public class DungeonManager {
         }
 
         // Start next
-        else start(dungeonCache, turn + 1);
+        else start(dungeonCache, turn + 1, guardTask);
     }
 
-    public void start(String dungeonCache, int turn) {
+    public void start(String dungeonCache, int turn,  DGuardedTask guardTask) {
         var ds = getStatus(dungeonCache);
         var world = ds.getCache().getWorldCache().toWorld();
         var dungeonID = ds.getCache().getDungeonID();
@@ -178,13 +191,28 @@ public class DungeonManager {
         // Run commands
         runStartCommands(dungeonCache, turn);
 
+        // If last turn
+        if (DGameUtils.isLastTurn(ds.getCache().getDungeonID(), turn)) {
+            // Sound
+            var soundPlay = plugin.getV4Config().getSoundPlay("on-boss-dungeon");
+            if (soundPlay == null) {
+                plugin.getLogger().warning("Dungeon boss sound null!");
+            }
+            else {
+                for (UUID uuid : ds.getPlayers()) {
+                    var player = Bukkit.getPlayer(uuid);
+                    ds.playSound(player, soundPlay, true);
+                }
+            }
+        }
+
         // Spawn
         Bukkit.getScheduler().runTaskLater(Dungeons.get(), () -> {
             if (!isPlaying(dungeonCache)) return;
             spawnBlockBreaks(dungeonCache, turn);
             spawnMobs(dungeonCache, turn);
             spawnSlaves(dungeonCache, turn);
-            spawnGuarded(dungeonCache, turn);
+            spawnGuarded(dungeonCache, turn, guardTask);
         }, dturn.getSpawn().getDelay());
     }
 
@@ -218,10 +246,12 @@ public class DungeonManager {
         }
         finally {
             // Clear tasks
+            DGuardedTask guardedTask = null;
             for (BukkitRunnable btask : status.getTasks()) {
-                if (btask instanceof DMobTask || btask instanceof DSlaveTask || btask instanceof DGuardedTask) {
+                if (btask instanceof DMobTask || btask instanceof DSlaveTask) {
                     btask.cancel();
                 }
+                else if (btask instanceof DGuardedTask) guardedTask = (DGuardedTask) btask;
             }
 
             // New status
@@ -229,10 +259,11 @@ public class DungeonManager {
 
             // Check next
             if (DGameUtils.isLastTurn(dungeonID, turn)) {
+                if (guardedTask != null) guardedTask.cancel();
                 task.cancel();
                 win(dungeonCache);
             }
-            else startNextTurn(dungeonCache);
+            else startNextTurn(dungeonCache, guardedTask);
         }
     }
 
@@ -242,7 +273,19 @@ public class DungeonManager {
         var d = DDataUtils.getDungeon(dungeonID);
         var world = status.getCache().getWorldCache().toWorld();
 
-        Lang.DUNGEON_WIN.broadcast();
+        Lang.DUNGEON_WIN.broadcast("%dungeon%", d.getInfo().getName());
+
+        // Sound
+        var soundPlay = plugin.getV4Config().getSoundPlay("on-win-dungeon");
+        if (soundPlay == null) {
+            plugin.getLogger().warning("Dungeon win sound null!");
+        }
+        else {
+            for (UUID uuid : status.getPlayers()) {
+                var player = Bukkit.getPlayer(uuid);
+                status.playSound(player, soundPlay, true);
+            }
+        }
 
         try {
             // Check players
@@ -251,9 +294,10 @@ public class DungeonManager {
                 // Check requirements
                 DRewardReq rr = d.getRewardReq();
                 if (DGameUtils.canGetReward(dungeonID, status.getStatistic(uuid), rr)) {
-                    d.getRewards().forEach(s -> {
+                    Difficulty difficulty = status.getCache().getDifficulty();
+                    for (String s : d.getReward().getReward(difficulty)) {
                         new Command(s).execute(player);
-                    });
+                    }
                 }
             });
         }
@@ -293,7 +337,7 @@ public class DungeonManager {
         var d = DDataUtils.getDungeon(dungeonID);
         var world = status.getCache().getWorldCache().toWorld();
 
-        // Clear
+        // Clear task + boss bar
         BossBar bb = status.getBossBar();
         if (bb != null) bb.removeAll();
         status.getTasks().forEach(br -> {
@@ -318,17 +362,21 @@ public class DungeonManager {
                 List<Player> players = inDungeonFilter(remainPlayers, dungeonID);
                 if (System.currentTimeMillis() - start >= 60000 || players.size() == 0) {
                     // Back to spawn
-                    players.forEach(player -> {
-                        player.teleport(Utils.getPlayerSpawn());
-                    });
+                    // player.teleport(Utils.getPlayerSpawn());
+                    players.forEach(Utils::toSpawn);
+
+                    // Clear entities
+                    clearEntities(dungeonID, world);
 
                     Tasks.async(() -> {
-                        // Remove temporary world
-                        plugin.getWorldLoader().unload(Utils.getPlayerSpawn(), status.getCache().getWorldCache().toWorldName(), true);
+                        // Add pending cache
+                        plugin.getWorldLoader().addPendingCache(status.getCache().getWorldCache());
+//                        plugin.getWorldLoader().unload(status.getCache().getWorldCache().toWorldName(), true);
                     });
 
                     // Remove caches
-                    plugin.getWorldManager().removeActiveWorld(dungeonID, status.getCache().getWorldCache());
+//                    plugin.getWorldManager().removeActiveWorld( status.getCache().getWorldCache());
+                    status.stopAllSounds();
                     removeStatus(status);
                     this.cancel();
                     return;
@@ -428,7 +476,7 @@ public class DungeonManager {
         });
     }
 
-    public void spawnGuarded(String dungeonCache, int turn) {
+    public void spawnGuarded(String dungeonCache, int turn, DGuardedTask guardedTask) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
         var t = DGameUtils.getTurn(dungeonID, turn);
@@ -436,6 +484,15 @@ public class DungeonManager {
         var world = status.getCache().getWorldCache().toWorld();
         TSGuarded guard = t.getSpawn().getGuarded();
         if (guard.getGuarded() == null) return;
+        if (guardedTask != null && guardedTask.getId().equalsIgnoreCase(guard.getGuarded())) {
+            status.addTask(guardedTask);
+            status.getTurnStatus().setGuarded(guardedTask.getEntity());
+
+            return;
+        }
+        if (guardedTask != null) status.cancelTask(guardedTask);
+        if (guard.isGuardedNull()) return;
+
 
         DLocation dl = d.getLocation(guard.getLocation());
         Location l = dl.getLocation(world);
@@ -473,8 +530,11 @@ public class DungeonManager {
 
         if (bb != null) bb.removePlayer(player);
         sd.removePlayer(player);
-        if (toSpawn) player.teleport(Utils.getPlayerSpawn());
+        if (toSpawn) Utils.toSpawn(player);
         Lang.DUNGEON_PLAYER_KICK.send(player);
+
+        // Stop sound
+        sd.stopSound(player);
 
         featherBoardCheck(player, true);
     }
@@ -498,7 +558,7 @@ public class DungeonManager {
             BossBar bb = sd.getBossBar();
             if (bb != null) bb.removePlayer(player);
             sd.removePlayer(player);
-            if (teleport) player.teleport(Utils.getPlayerSpawn());
+            if (teleport) Utils.toSpawn(player);
             sd.getPlayers().forEach(uuid -> {
                 Player p = Bukkit.getPlayer(uuid);
                 Lang.DUNGEON_PLAYER_DEAD_KICK_OTHER.send(p, "%player%", "" + player.getName());

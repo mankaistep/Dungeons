@@ -16,6 +16,7 @@ public class DOption extends Configable {
 	private Material guiIcon;
 	private int cooldown;
 	private boolean allowVelocity;
+	private boolean difficulty;
 	
 	public DOption(FileConfiguration config, String path) {
 		super(config, path);
@@ -64,7 +65,11 @@ public class DOption extends Configable {
 	public boolean isTicketRequired() {
 		return this.ticketRequired;
 	}
-	
+
+	public boolean hasDifficulty() {
+		return difficulty;
+	}
+
 	@Override
 	public void load(FileConfiguration config, String path) {
 		this.maxTime = config.getInt(path + ".max-time");
@@ -84,6 +89,7 @@ public class DOption extends Configable {
 		if (config.contains(path + ".ticket-required")) {
 			this.ticketRequired = config.getBoolean(path + ".ticket-required");
 		}
+		this.difficulty = config.getBoolean(path + ".difficulty");
 	}
 
 	@Override
@@ -97,6 +103,7 @@ public class DOption extends Configable {
 		config.set(path + ".cooldown", this.cooldown);
 		config.set(path + ".allow-velocity", this.allowVelocity);
 		config.set(path + ".gui-slot", this.guiSlot);
+		config.set(path + ".difficulty", this.difficulty);
 	}
 	
 }

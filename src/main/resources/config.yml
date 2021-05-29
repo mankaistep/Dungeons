@@ -12,6 +12,94 @@
 # [showrank]
 # Rank: S, A, B, C, D, F
 
+sound-play:
+  on-resourcepack-load:
+    delay: 0
+    play-times: 3
+    sounds:
+      - theme1
+  on-start-dungeon:
+    delay: 10
+    play-times: -1
+    sounds:
+      - background1
+      - background2
+      - background3
+      - background4
+      - background5
+      - background6
+      - background7
+      - background8
+  on-boss-dungeon:
+    delay: 10
+    play-times: -1
+    sounds:
+      - boss1
+      - boss2
+      - boss3
+      - boss4
+  on-win-dungeon:
+    delay: 0
+    play-times: 1
+    sounds:
+      - victory1
+      - victory2
+      - victory3
+sounds:
+  background1:
+    source: 'dungeon.background.1'
+    length: 15484
+  background2:
+    source: 'dungeon.background.2'
+    length: 10105
+  background3:
+    source: 'dungeon.background.3'
+    length: 21333
+  background4:
+    source: 'dungeon.background.4'
+    length: 13091
+  background5:
+    source: 'dungeon.background.5'
+    length: 20426
+  background6:
+    source: 'dungeon.background.6'
+    length: 13241
+  background7:
+    source: 'dungeon.background.7'
+    length: 16000
+  background8:
+    source: 'dungeon.background.8'
+    length: 12000
+  theme1:
+    source: 'dungeon.theme.1'
+    length: 20211
+  victory1:
+    source: 'dungeon.victory.1'
+    length: 7416
+  victory2:
+    source: 'dungeon.victory.2'
+    length: 8332
+  victory3:
+    source: 'dungeon.victory.3'
+    length: 4000
+  boss1:
+    source: 'dungeon.boss.1'
+    length: 12000
+  boss2:
+    source: 'dungeon.boss.2'
+    length: 17455
+  boss3:
+    source: 'dungeon.boss.3'
+    length: 19200
+  boss4:
+    source: 'dungeon.boss.4'
+    length: 22818
+
+room:
+  world-last-time: 3600
+  room-count-down: 60
+  remove-room-count-down: 5
+
 world:
   world_template_1:
     # NORMAL/NETHER/THE_END
@@ -94,72 +182,57 @@ guarded:
    health: 30
    target-radius: 10
 
-dungeon:
-  d1:
-    info:
-      name: Đảo xanh
-      desc: Dungeon cơ bản dành cho người mới bắt đầu
-      world: world_dungeon_1
-    option:
-      max-time: 3600
-      player: '1:5'
-      level: '5:10'
-      gui-slot: 0
-      mob-glow: true
-    rule:
-      respawn: 3 # Only for falling to lava and water if allowed
-      lava-dead: true
-      water-dead: true
-      pvp: true
-    location:
-      l1: 2;world;-374.46584650766835;132.0;215.41184693620855;0.1;0.1
-      l2: 2;world;-374.46584650766835;132.0;215.41184693620855;0.1;0.1
-    block:
-      b1: STONE;0;world;10;12;13
-    money-drop:
-    - mob1;100;10
-    drop:
-    - mob1;item1;1;80 #80% drop item x1 when mob1 dead
-    reward-req:
-      mob-kill: mob1;mob2
-      slave-save: 1
-      kill-count: 10
-      max-dead: 4
-    rewards: []
-    check-points:
-    - l1
-    - l3
-    turn:
-      t1:
-        objective: Hạ gục toàn bộ kẻ địch và giải cứu người dân
-        win-req:
-          slave-save: 5
-          kill: mob1;mob2 #*
-          kill-all: true
-        lose-req:
-          guarded-killed: g1
-        commands:
-          on-start:
-          - '{5} [title] &c&lĐảo xanh;&7Coi chừng nha'
-          - '{10} [mess] &aLuật: 123abc 123abc'
-          - '{10} [mess] &aLuật: xyz xyz xyz'
-          on-lose: []
-          on-win:
-          - '[kill] *'
-        spawn:
-          delay: 100
-          block-break: b1;b2;b3;b4;b5
-          slave:
-          - slv1;l1
-          guarded: g1;l1
-          mob:
-          - mob1;2;l1
-          - mob2;2;l1
-          - mob2;1;l2
-          chest:
-            l1:
-              rank: F
-              chance: 100.0
-              commands:
-                - bc dit me cuoc doi
-    
+gui:
+  size: 27
+  background:
+    slots: [1, 10, 19]
+    item:
+      name: '&f'
+      type: GLASS_PANE
+      data: 21
+      lore: []
+      enchant: []
+      flag: []
+  tutorial:
+    slot: 0
+    item:
+      name: '&a&lPhó bản (Dungeon) là gì ?'
+      type: GLASS_PANE
+      data: 25
+      lore:
+        - ''
+        - '&f&oLà nơi bạn chiến đấu với quái vật, '
+        - '&f&otừ đó nhận được các phần quà'
+        - '&f&otùy thuộc vào các phó bản'
+        - ''
+        - '&f&oĐể tham gia phó bản, bạn phải '
+        - '&f&ođợi người tham gia trước kết thúc '
+        - '&f&orồi bạn mới có thể vào'
+        - ''
+        - '&f&oMột số phó bản yêu cầu &6Vé Phó bản'
+        - '&f&ovà bạn có thể mua ở cửa hàng'
+      enchant: []
+      flag: []
+  info:
+    slot: 9
+    item:
+      name: '&a&lThông tin của bạn'
+      type: GLASS_PANE
+      data: 8
+      lore:
+        - '&6Buff tỉ lệ rơi đồ: &e%dungeon_buff_drop%'
+        - '&6Buff hồi sinh: &e%dungeon_buff_revive% lượt'
+        - '&6Vượt phó bản: &e%sora_dungeon_win_times% lần'
+        - '&6Thua phó bản: &e%sora_dungeon_lose_times% lần'
+        - '&6Hạ gục: &e%sora_dungeon_mob_killed% quái'
+      enchant: []
+      flag: []
+  quit:
+    slot: 18
+    item:
+      name: '&c&lThoát'
+      type: GLASS_PANE
+      data: 24
+      lore: []
+      enchant: []
+      flag: []

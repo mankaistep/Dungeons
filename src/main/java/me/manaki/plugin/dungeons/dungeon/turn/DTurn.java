@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 public class DTurn extends Configable {
 
 	private String objective;
+	private int maxMobs;
 	private TWinReq wr;
 	private TLoseReq lr;
 	private TCommand cmd;
@@ -20,13 +21,6 @@ public class DTurn extends Configable {
 	
 	public DTurn(FileConfiguration config, String path) {
 		super(config, path);
-	}
-	
-	public DTurn(TWinReq wr, TCommand cmd, TSpawn spawn, List<TChest> chests) {
-		this.wr = wr;
-		this.cmd = cmd;
-		this.spawn = spawn;
-		this.chests = chests;
 	}
 	
 	public TWinReq getWinRequirement() {
@@ -60,9 +54,15 @@ public class DTurn extends Configable {
 		return this.objective;
 	}
 
+
+	public int getMaxMobs() {
+		return maxMobs;
+	}
+
 	@Override
 	public void load(FileConfiguration config, String path) {
 		this.objective = config.contains(path + ".objective") ? config.getString(path + ".objective") : "";
+		this.maxMobs = config.getInt(path + ".max-mobs", 3);
 
 		// Win Req
 		int save = config.getInt(path + ".win-req.slave-save");
@@ -116,6 +116,7 @@ public class DTurn extends Configable {
 	@Override
 	public void save(FileConfiguration config, String path) {
 		config.set(path + ".objective", this.getObjective());
+		config.set(path + ".max-mobs", this.getMaxMobs());
 
 		// Win Req
 		config.set(path + ".win-req.slave-save", this.getWinRequirement().getSlaveSave());
@@ -140,8 +141,8 @@ public class DTurn extends Configable {
 		// Chests
 		this.chests.forEach(chest -> {
 			config.set(path + ".chest." + chest.getLocation() + ".chance", chest.getChance());
-			config.set(path + ".chest." + chest.getLocation() + ".commands", chest.getCommands());
 			config.set(path + ".chest." + chest.getLocation() + ".rank", chest.getRank().name());
+			config.set(path + ".chest." + chest.getLocation() + ".commands", chest.getCommands());
 		});
 	}
 	

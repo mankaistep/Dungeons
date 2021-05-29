@@ -22,7 +22,11 @@ public class MinMax {
 	public int getMax() {
 		return this.max;
 	}
-	
+
+	public boolean test(int value) {
+		return value >= min && value <= max;
+	}
+
 	@Override
 	public String toString() {
 		return this.min + ":" + this.max;
