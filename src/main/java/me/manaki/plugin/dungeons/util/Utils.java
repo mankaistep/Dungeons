@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,8 +107,12 @@ public class Utils {
 		return newL;
 	}
 	
-	public static Location getPlayerSpawn() {
-		return ((EssentialsSpawn) Bukkit.getPluginManager().getPlugin("EssentialsSpawn")).getSpawn("default");
+//	public static Location getPlayerSpawn() {
+//		return ((EssentialsSpawn) Bukkit.getPluginManager().getPlugin("EssentialsSpawn")).getSpawn("default");
+//	}
+
+	public static void toSpawn(Player player) {
+		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
 	}
 	
 	public static String getFormat(int second) {

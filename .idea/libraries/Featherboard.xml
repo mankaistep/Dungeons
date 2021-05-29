@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Featherboard">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../../Minecraft/Server/SoraSky SS3/plugins/Featherboard.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

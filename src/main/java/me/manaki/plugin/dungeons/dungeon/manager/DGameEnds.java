@@ -83,7 +83,7 @@ public class DGameEnds {
 		DStatus status = DGameUtils.getStatus(id);
 		Dungeon d = DDataUtils.getDungeon(id);
 		
-		Lang.DUNGEON_WIN.broadcast();
+		Lang.DUNGEON_WIN.broadcast("%dungeon%", d.getInfo().getName());
 		
 		// Check players
 		status.getPlayers().forEach(uuid -> {
@@ -162,7 +162,8 @@ public class DGameEnds {
 				if (System.currentTimeMillis() - start >= 60000 || players.size() == 0) {
 					DGameStarts.clearEntities(id);
 					players.forEach(player -> {
-						player.teleport(Utils.getPlayerSpawn());
+//						player.teleport(Utils.getPlayerSpawn());
+						Utils.toSpawn(player);
 					});
 					DGameUtils.removeStatus(id);
 					DQueues.newQueue(id);
