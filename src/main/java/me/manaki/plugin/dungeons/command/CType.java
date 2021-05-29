@@ -68,7 +68,8 @@ public enum CType {
 	MESS {
 		@Override
 		public void execute(String cmd, Player player) {
-			player.sendMessage(Utils.c(cmd));
+			var placeholders = Utils.getPlaceholders(player);
+			player.sendMessage((Utils.setPlaceholders(Utils.c(cmd), placeholders)));
 		}
 	},
 	BROADCAST {
@@ -82,6 +83,7 @@ public enum CType {
 	TITLE {
 		@Override
 		public void execute(String cmd, Player player) {
+			var placeholders = Utils.getPlaceholders(player);
 			String t = cmd.split(";")[0];
 			String s = cmd.split(";")[1];
 			int i1 = 10;
@@ -92,7 +94,7 @@ public enum CType {
 				i2 = Integer.valueOf(cmd.split(";")[3]);
 				i3 = Integer.valueOf(cmd.split(";")[4]);
 			}
-			player.sendTitle(Utils.c(t), Utils.c(s), i1, i2, i3);
+			player.sendTitle(Utils.setPlaceholders(Utils.c(t), placeholders), Utils.setPlaceholders(Utils.c(s), placeholders), i1, i2, i3);
 		}
 	},
 	SOUND {

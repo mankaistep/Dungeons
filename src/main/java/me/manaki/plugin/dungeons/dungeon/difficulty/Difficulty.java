@@ -9,7 +9,7 @@ import java.util.List;
 
 public enum Difficulty {
 
-    EASY("Dễ", new MinMax(5, 25)) {
+    EASY("§f", "Dễ", new MinMax(5, 25)) {
         @Override
         public ItemStack getIcon() {
             var is = new ItemStack(Material.LIGHT_GRAY_BANNER);
@@ -20,7 +20,7 @@ public enum Difficulty {
             return is;
         }
     },
-    NORMAL("Thường", new MinMax(25, 50)) {
+    NORMAL("§e", "Thường", new MinMax(25, 50)) {
         @Override
         public ItemStack getIcon() {
             var is = new ItemStack(Material.YELLOW_BANNER);
@@ -31,7 +31,7 @@ public enum Difficulty {
             return is;
         }
     },
-    HARD("Khó", new MinMax(45, 75)) {
+    HARD("§d", "Khó", new MinMax(45, 75)) {
         @Override
         public ItemStack getIcon() {
             var is = new ItemStack(Material.PURPLE_BANNER);
@@ -42,7 +42,7 @@ public enum Difficulty {
             return is;
         }
     },
-    INSANE("Khủng khiếp", new MinMax(65, 100)) {
+    INSANE("§c", "Khủng khiếp", new MinMax(65, 100)) {
         @Override
         public ItemStack getIcon() {
             var is = new ItemStack(Material.RED_BANNER);
@@ -54,10 +54,12 @@ public enum Difficulty {
         }
     };
 
+    private final String color;
     private final String name;
     private final MinMax levelRequired;
 
-    Difficulty(String name, MinMax levelRequired) {
+    Difficulty(String color, String name, MinMax levelRequired) {
+        this.color = color;
         this.name = name;
         this.levelRequired = levelRequired;
     }
@@ -70,5 +72,9 @@ public enum Difficulty {
 
     public MinMax getLevelRequired() {
         return levelRequired;
+    }
+
+    public String getColor() {
+        return color;
     }
 }

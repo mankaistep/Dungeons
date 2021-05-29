@@ -40,7 +40,14 @@ public class DMobTask extends BukkitRunnable {
 		this.status = status;
 		this.isSpawned = false;
 		this.loc = loc.getBlock().getLocation().add(0.5, 0, 0.5);
+	}
+
+	public void start() {
 		this.runTaskTimer(Dungeons.get(), 0, 20);
+	}
+
+	public Location getLocation() {
+		return loc;
 	}
 
 	@Override
@@ -61,10 +68,11 @@ public class DMobTask extends BukkitRunnable {
 		if (isSpawned) return;
 
 		// Has near player
+		var d = DDataUtils.getDungeon(dungeon);
 		boolean hasPlayerNear = false;
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			if (player.getWorld() == loc.getWorld()) {
-				if (player.getLocation().distance(loc) < 30) {
+				if (player.getLocation().distance(loc) < d.getOption().getSpawnRadius()) {
 					hasPlayerNear = true;
 					break;
 				}
@@ -72,15 +80,8 @@ public class DMobTask extends BukkitRunnable {
 		}
 		if (!hasPlayerNear) return;
 
-		// Current maxmobs
-		var d = DDataUtils.getDungeon(dungeon);
-		int maxmobs = d.getTurn(status.getTurn()).getMaxMobs();
-		if (status.getTurnStatus().getCurrentMobs() >= maxmobs) return;
-
 		// Spawn
-		status.getTurnStatus().addCurrentMobs(1);
-		Tasks.async(this::playReadyEffect, 0, 4, this.SPAWN_DELAY_TICK * 50L);
-		Bukkit.getScheduler().runTaskLater(Dungeons.get(), this::spawn, this.SPAWN_DELAY_TICK);
+		spawn();
 	}
 
 	public void spawn() {
@@ -227,29 +228,6 @@ public class DMobTask extends BukkitRunnable {
 			});
 
 
-		}
-	}
-
-	private void playReadyEffect() {
-		var lShow = Utils.getGroundBlock(loc.clone()).add(0, 1.2, 0);
-		circleParticles(new Particle.DustOptions(Color.PURPLE, 1), lShow, 1);
-	}
-
-	private void circleParticles(Particle.DustOptions doo, Location location, double radius) {
-		int amount = new Double(radius * 20).intValue();
-		double increment = (2 * Math.PI) / amount;
-		ArrayList<Location> locations = new ArrayList<Location>();
-
-		for (int i = 0; i < amount; i++) {
-			double angle = i * increment;
-			double x = location.getX() + (radius * Math.cos(angle));
-			double z = location.getZ() + (radius * Math.sin(angle));
-			locations.add(new Location(location.getWorld(), x, location.getY(), z));
-		}
-
-		for (Location l : locations) {
-//        	ParticleAPI.sendParticle(e, l, 0, 0, 0, 0, 1);
-			location.getWorld().spawnParticle(Particle.REDSTONE, l, 1, 0, 0, 0, 0, doo);
 		}
 	}
 

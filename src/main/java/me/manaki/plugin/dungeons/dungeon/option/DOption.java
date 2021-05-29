@@ -17,6 +17,7 @@ public class DOption extends Configable {
 	private int cooldown;
 	private boolean allowVelocity;
 	private boolean difficulty;
+	private double spawnRadius;
 	
 	public DOption(FileConfiguration config, String path) {
 		super(config, path);
@@ -70,6 +71,10 @@ public class DOption extends Configable {
 		return difficulty;
 	}
 
+	public double getSpawnRadius() {
+		return spawnRadius;
+	}
+
 	@Override
 	public void load(FileConfiguration config, String path) {
 		this.maxTime = config.getInt(path + ".max-time");
@@ -90,6 +95,7 @@ public class DOption extends Configable {
 			this.ticketRequired = config.getBoolean(path + ".ticket-required");
 		}
 		this.difficulty = config.getBoolean(path + ".difficulty");
+		this.spawnRadius = config.getDouble(path + ".spawn-radius", 35);
 	}
 
 	@Override
@@ -103,6 +109,7 @@ public class DOption extends Configable {
 		config.set(path + ".cooldown", this.cooldown);
 		config.set(path + ".allow-velocity", this.allowVelocity);
 		config.set(path + ".gui-slot", this.guiSlot);
+		config.set(path + ".spawn-radius", this.spawnRadius);
 		config.set(path + ".difficulty", this.difficulty);
 	}
 	

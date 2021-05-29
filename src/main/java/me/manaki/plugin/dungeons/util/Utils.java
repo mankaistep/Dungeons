@@ -1,10 +1,12 @@
 package me.manaki.plugin.dungeons.util;
 
-import com.earth2me.essentials.spawn.EssentialsSpawn;
 import com.google.common.collect.Lists;
-import io.lumine.xikage.mythicmobs.items.ItemManager;
+import com.google.common.collect.Maps;
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.location.DLocation;
+import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
+import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
@@ -17,10 +19,33 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 public class Utils {
+
+	public static String setPlaceholders(String s, Map<String, String> placeholders) {
+		for (Entry<String, String> e : placeholders.entrySet()) {
+			s = s.replace(e.getKey(), e.getValue());
+		}
+		return s;
+	}
+
+	public static Map<String, String> getPlaceholders(Player player) {
+		Map<String, String> m = Maps.newHashMap();
+		if (!DPlayerUtils.isInDungeon(player)) return m;
+
+		var status = DPlayerUtils.getStatus(player);
+		if (status.getCache().getDifficulty() != null) {
+			m.put("%difficulty_color%", status.getCache().getDifficulty().getColor());
+			m.put("%difficulty_name%", status.getCache().getDifficulty().getName());
+		}
+
+		return m;
+	}
 
 	public static ItemStack getBackIcon() {
 		var is = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);

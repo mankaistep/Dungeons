@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
+import me.manaki.plugin.dungeons.dungeon.task.DMobSpawnTask;
 import me.manaki.plugin.dungeons.dungeon.turn.status.TStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.sound.DSoundPlay;
@@ -15,6 +16,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
 
@@ -36,6 +38,8 @@ public class DStatus {
 	// V4
 	private DungeonCache cache;
 	private Map<Player, DSoundThread> currentSounds;
+	private DMobSpawnTask mobSpawnTask;
+	private boolean ended;
 	
 	public DStatus(DungeonCache cache, long start, List<UUID> players, BossBar bossbar) {
 		this.cache = cache;
@@ -54,6 +58,7 @@ public class DStatus {
 		this.openedChests = Maps.newHashMap();
 		this.checkPoint = DDataUtils.getDungeon(cache.getDungeonID()).getCheckPoints().get(0);
 		this.currentSounds = Maps.newConcurrentMap();
+		this.ended = false;
 	}
 
 	public DungeonCache getCache() {
@@ -131,7 +136,16 @@ public class DStatus {
 		Player player = Bukkit.getPlayer(uuid);
 		if (player != null && this.bossbar != null) this.bossbar.removePlayer(player);
 	}
-	
+
+	public DMobSpawnTask getMobSpawnTask() {
+		return mobSpawnTask;
+	}
+
+	public void setMobSpawnTask(DMobSpawnTask mobSpawnTask) {
+		this.mobSpawnTask = mobSpawnTask;
+		this.tasks.add(mobSpawnTask);
+	}
+
 	public void setBossBar(BossBar bossbar) {
 		this.bossbar = bossbar;
 	}
@@ -164,6 +178,14 @@ public class DStatus {
 		return this.start;
 	}
 
+	public void setEnded(boolean ended) {
+		this.ended = ended;
+	}
+
+	public boolean isEnded() {
+		return ended;
+	}
+
 	public void cancelTask(BukkitRunnable br) {
 		br.cancel();
 		this.tasks.remove(br);
@@ -171,10 +193,9 @@ public class DStatus {
 
 	public void cancelAllTask(BukkitRunnable except) {
 		for (BukkitRunnable task : this.tasks) {
-			if (task != except) task.cancel();
+			if (task != except && Bukkit.getScheduler().isCurrentlyRunning(task.getTaskId()) && !task.isCancelled()) task.cancel();
 		}
 		this.tasks.clear();
-		this.tasks.add(except);
 	}
 
 	public void stopSound(Player player) {

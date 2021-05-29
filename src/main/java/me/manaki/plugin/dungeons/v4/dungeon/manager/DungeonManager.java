@@ -112,8 +112,14 @@ public class DungeonManager {
                 var dungeonCache = new DungeonCache(dungeonID, difficulty, finalWorldCache);
                 var bossbar = Dungeons.get().featherBoard == null ? Bukkit.createBossBar("§c§l" + dungeon.getInfo().getName() + " §f§l" + Utils.getFormat(dungeon.getOption().getMaxTime()), BarColor.GREEN, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC) : null;
                 var status = new DStatus(dungeonCache, System.currentTimeMillis(), players, bossbar);
+                var mobSpawnTask = new DMobSpawnTask(dungeonID, status);
                 var turnstatus = new TStatus();
+
+                // Set
                 status.setTurnStatus(turnstatus);
+                status.setMobSpawnTask(mobSpawnTask);
+
+                // Add to caches
                 if (bossbar != null) players.forEach(uuid -> bossbar.addPlayer(Objects.requireNonNull(Bukkit.getPlayer(uuid))));
                 statuses.add(status);
 
@@ -340,9 +346,8 @@ public class DungeonManager {
         // Clear task + boss bar
         BossBar bb = status.getBossBar();
         if (bb != null) bb.removeAll();
-        status.getTasks().forEach(br -> {
-            if (!br.isCancelled()) br.cancel();
-        });
+        status.cancelAllTask(null);
+        status.setEnded(true);
         List<UUID> remainPlayers = status.getPlayers();
 
         // Log
@@ -455,8 +460,10 @@ public class DungeonManager {
                 c++;
                 DLocation dl = d.getLocation(m.getLocation());
                 Location l = Utils.random(dl.getLocation(world), dl.getRadius());
-                BukkitRunnable br = new DMobTask(dungeonID, mob, l, status);
-                status.addTask(br);
+                DMobTask br = new DMobTask(dungeonID, mob, l, status);
+
+                // Add task
+                status.getMobSpawnTask().add(br);
             }
         });
     }

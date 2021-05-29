@@ -111,6 +111,12 @@ public class DGuardedTask extends BukkitRunnable {
         if (this.isCancelled()) return;
         if (!isSpawned) return;
         if (!entity.isValid()) {
+            // Cancel task
+            this.cancel();
+
+            // Check if end
+            if (status.isEnded()) return;
+
             // Check Lose Req
             Dungeon d = DDataUtils.getDungeon(this.dungeonID);
             DTurn turn = d.getTurn(status.getTurn());
@@ -122,8 +128,6 @@ public class DGuardedTask extends BukkitRunnable {
                 }
             }
 
-            // Cancel task
-            this.cancel();
         }
     }
 

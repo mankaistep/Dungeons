@@ -91,7 +91,7 @@ public class WorldLoader {
         for (String name : Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList())) {
             boolean is = false;
             for (Dungeon d : DDataUtils.getDungeons().values()) {
-                if (name.startsWith(d.getInfo().getWorld())) {
+                if (name.startsWith(d.getInfo().getWorld() + "_")) {
                     is = true;
                     break;
                 }
