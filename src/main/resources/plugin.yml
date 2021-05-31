@@ -3,7 +3,7 @@ author: MankaiStep
 version: 1.0
 load: POSTWORLD
 main: me.manaki.plugin.dungeons.Dungeons
-depend: [MythicMobs, EssentialsSpawn]
+depend: [MythicMobs]
 softdepend: [Shops, Vault, FeatherBoard, PlaceholderAPI]
 api-version: 1.16
 loadbefore: [WorldGuard]

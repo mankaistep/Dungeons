@@ -96,6 +96,7 @@ sounds:
     length: 22818
 
 room:
+  room-limit: 10
   world-last-time: 3600
   room-count-down: 60
   remove-room-count-down: 5

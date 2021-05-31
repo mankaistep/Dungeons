@@ -21,6 +21,7 @@ public class V4Config {
     private int roomCountdown;
     private int removeRoomCountdown;
     private int worldLastTime;
+    private int roomLimit;
 
     private Map<String, DSound> sounds;
     private Map<String, DSoundPlay> soundPlays;
@@ -33,6 +34,7 @@ public class V4Config {
         this.worldLastTime = 3600;
         this.soundPlays = Maps.newConcurrentMap();
         this.sounds = Maps.newConcurrentMap();
+        this.roomLimit = 10;
     }
     
     public void reload() {
@@ -54,6 +56,7 @@ public class V4Config {
         roomCountdown = config.getInt("room.room-count-down");
         removeRoomCountdown = config.getInt("room.remove-room-count-down");
         worldLastTime = config.getInt("room.world-last-time");
+        roomLimit = config.getInt("room.room-limit", 10);
 
         // Sound
         this.sounds.clear();
@@ -110,5 +113,9 @@ public class V4Config {
 
     public Map<String, DSoundPlay> getSoundPlays() {
         return soundPlays;
+    }
+
+    public int getRoomLimit() {
+        return roomLimit;
     }
 }

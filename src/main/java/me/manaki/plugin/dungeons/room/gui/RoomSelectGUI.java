@@ -82,6 +82,10 @@ public class RoomSelectGUI {
                 player.sendMessage("§cThoát phòng hiện tại để tạo phòng mới!");
                 return;
             }
+            else if (rm.getRooms(dungeonID).size() >= Dungeons.get().getV4Config().getRoomLimit()) {
+                player.sendMessage("§cCó quá nhiều phòng, đợi phòng khác đóng rồi tạo phòng mới!");
+                return;
+            }
             if (d.getOption().hasDifficulty()) DifficultySelectGUI.open(player, dungeonID);
             else {
                 checkAndCreate(dungeonID, null, player);
