@@ -50,6 +50,10 @@ public class DSlaveTask extends BukkitRunnable {
 	
 	@Override
 	public void run() {
+		if (status.isEnded()) {
+			this.cancel();
+			return;
+		}
 		try {
 			checkSpawn();
 			checkLocation();

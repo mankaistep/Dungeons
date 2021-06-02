@@ -328,6 +328,12 @@ public class DungeonManager {
                     new Command(cmd).execute(player);
                 });
             });
+
+            // Kick
+            for (var player : status.getPlayers().stream().map(Bukkit::getPlayer).collect(Collectors.toList())) {
+                plugin.getDungeonManager().kick(player, true);
+            }
+
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -346,7 +352,7 @@ public class DungeonManager {
         // Clear task + boss bar
         BossBar bb = status.getBossBar();
         if (bb != null) bb.removeAll();
-        status.cancelAllTask(null);
+        status.cancelAllTask();
         status.setEnded(true);
         List<UUID> remainPlayers = status.getPlayers();
 
@@ -371,7 +377,7 @@ public class DungeonManager {
                     players.forEach(Utils::toSpawn);
 
                     // Clear entities
-                    clearEntities(dungeonID, world);
+                    clearEntities(world);
 
                     Tasks.async(() -> {
                         // Add pending cache
@@ -404,7 +410,7 @@ public class DungeonManager {
         return false;
     }
 
-    public void clearEntities(String dungeonID, World world) {
+    public void clearEntities(World world) {
         if (world != null) {
             world.getEntities().forEach(DGameUtils::checkAndRemove);
         }

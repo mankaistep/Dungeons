@@ -213,8 +213,16 @@ public class WorldLoader {
         if (world == null) return;
 
         // Check player
+        boolean hasPlayer = false;
         for (Player player : world.getPlayers()) {
             Utils.toSpawn(player);
+            hasPlayer = true;
+        }
+        if (hasPlayer) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                unload(worldName, isAsync, remove, save);
+            }, 20);
+            return;
         }
 
         // Unload async

@@ -191,9 +191,9 @@ public class DStatus {
 		this.tasks.remove(br);
 	}
 
-	public void cancelAllTask(BukkitRunnable except) {
+	public void cancelAllTask() {
 		for (BukkitRunnable task : this.tasks) {
-			if (task != except && Bukkit.getScheduler().isCurrentlyRunning(task.getTaskId()) && !task.isCancelled()) task.cancel();
+			if (Bukkit.getScheduler().isCurrentlyRunning(task.getTaskId())) task.cancel();
 		}
 		this.tasks.clear();
 	}

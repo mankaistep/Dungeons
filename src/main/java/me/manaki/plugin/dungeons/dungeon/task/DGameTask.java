@@ -36,6 +36,10 @@ public class DGameTask extends BukkitRunnable {
 	
 	@Override
 	public void run() {
+		if (status.isEnded()) {
+			this.cancel();
+			return;
+		}
 		setBossBar();
 		checkDungeon();
 		checkWinTurn();

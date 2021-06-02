@@ -8,6 +8,7 @@ import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DSlaveUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
 import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.sound.DSound;
 import me.manaki.plugin.dungeons.sound.DSoundThread;
 import me.manaki.plugin.dungeons.util.Utils;
 import me.manaki.plugin.dungeons.votekick.KickVote;
@@ -40,21 +41,35 @@ public class PlayerListener implements Listener {
 		this.plugin = plugin;
 	}
 
+	@EventHandler
+	public void onTeleportSound(PlayerTeleportEvent e) {
+		Bukkit.getScheduler().runTask(Dungeons.get(), () -> {
+			for (Entry<String, DSound> entry : plugin.getV4Config().getSounds().entrySet()) {
+				var dsoundplay = entry.getValue();
+				e.getPlayer().stopSound(dsoundplay.getSource());
+			}
+		});
+	}
+
 	// Res load
 	@EventHandler
 	public void onResLoad(PlayerResourcePackStatusEvent e) {
 		var player = e.getPlayer();
-		var soundPlay = plugin.getV4Config().getSoundPlay("on-resourcepack-load");
-		if (soundPlay == null) {
-			plugin.getLogger().warning("Resourepack load sound null!");
-			return;
-		}
-		var sound = Dungeons.get().getV4Config().getSound(soundPlay.getSounds().get(new Random().nextInt(soundPlay.getSounds().size())));
-		var sthread = new DSoundThread(player, sound, soundPlay.getTimes());
-		if (soundPlay.getDelay() != 0) {
-			Bukkit.getScheduler().runTaskLaterAsynchronously(Dungeons.get(), sthread::start, soundPlay.getDelay());
-		}
-		else sthread.start();
+		Bukkit.getScheduler().runTask(Dungeons.get(), () -> {
+			if (e.getStatus() == PlayerResourcePackStatusEvent.Status.SUCCESSFULLY_LOADED) {
+				var soundPlay = plugin.getV4Config().getSoundPlay("on-resourcepack-load");
+				if (soundPlay == null) {
+					plugin.getLogger().warning("Resourepack load sound null!");
+					return;
+				}
+				var sound = Dungeons.get().getV4Config().getSound(soundPlay.getSounds().get(new Random().nextInt(soundPlay.getSounds().size())));
+				var sthread = new DSoundThread(player, sound, soundPlay.getTimes());
+				if (soundPlay.getDelay() != 0) {
+					Bukkit.getScheduler().runTaskLaterAsynchronously(Dungeons.get(), sthread::start, soundPlay.getDelay());
+				}
+				else sthread.start();
+			}
+		});
 	}
 
 	// Quit

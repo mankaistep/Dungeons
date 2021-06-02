@@ -36,6 +36,10 @@ public class DMobSpawnTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        if (status.isEnded()) {
+            this.cancel();
+            return;
+        }
         if (pendings.size() == 0) return;
 
         // Spawn current maxmobs

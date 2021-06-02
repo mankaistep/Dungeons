@@ -200,16 +200,17 @@ public class AdminPluginCommand implements CommandExecutor {
 			}
 
 			else if (args[0].equalsIgnoreCase("savemap")) {
-				var world = args[1];
-
-				// Load world
-				if (Bukkit.getWorld(world) != null) {
-					plugin.getWorldLoader().unload(world, false, false, true);
+				var worldName = args[1];
+				var world = Bukkit.getWorld(worldName);
+				if (world == null) {
+					sender.sendMessage("§cWorld null!");
+					return false;
 				}
 
 				// Save world
-				var tempWorldFolder = new File(Bukkit.getWorldContainer() + "//" + world);
-				var sourceWorld = new File(plugin.getDataFolder() + "//" + WorldLoader.PATH + "//" + world);
+				world.save();
+				var tempWorldFolder = new File(Bukkit.getWorldContainer() + "//" + worldName);
+				var sourceWorld = new File(plugin.getDataFolder() + "//" + WorldLoader.PATH + "//" + worldName);
 				if (!sourceWorld.exists()) {
 					plugin.getLogger().warning(sourceWorld.getName() + " world doesnt exist!");
 					return false;
@@ -229,7 +230,9 @@ public class AdminPluginCommand implements CommandExecutor {
 				FileUtils.deleteDirectory(sourceWorld);
 				sourceWorld.mkdirs();
 				FileUtils.copyDirectory(tempWorldFolder, sourceWorld);
-				FileUtils.deleteDirectory(tempWorldFolder);
+
+				// Unload
+				plugin.getWorldLoader().unload(worldName, false, false, false);
 
 				// Done
 				sender.sendMessage("§aDone!");

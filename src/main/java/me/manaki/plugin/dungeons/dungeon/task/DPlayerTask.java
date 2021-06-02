@@ -30,6 +30,11 @@ public class DPlayerTask extends BukkitRunnable {
 	
 	@Override
 	public void run() {
+		if (status.isEnded()) {
+			this.cancel();
+			return;
+		}
+
 		if (!checkResult()) return;
 		if (!checkOnline()) return;
 		if (!checkPlace()) return;
