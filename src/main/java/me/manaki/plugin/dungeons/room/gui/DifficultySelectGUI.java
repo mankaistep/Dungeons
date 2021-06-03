@@ -20,7 +20,6 @@ public class DifficultySelectGUI {
     public static void open(Player player, String dungeonID) {
         var inv = Bukkit.createInventory(new DSGUIHolder(dungeonID), 9, "§0§lCHỌN ĐỘ KHÓ");
         player.openInventory(inv);
-        player.playSound(player.getLocation(), Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, 1, 1);
 
         Bukkit.getScheduler().runTaskAsynchronously(Dungeons.get(), () -> {
             for (int i = 0 ; i < inv.getSize() ; i++) inv.setItem(i, Utils.getBackIcon());

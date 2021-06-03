@@ -32,7 +32,6 @@ public class RoomSelectGUI {
         var d = DDataUtils.getDungeon(dungeonID);
         var inv = Bukkit.createInventory(new RSGUIHolder(dungeonID), 54, "§0§lPHÒNG PHÓ BẢN " + d.getInfo().getName().toUpperCase());
         player.openInventory(inv);
-        player.playSound(player.getLocation(), Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, 1, 1);
 
         Bukkit.getScheduler().runTaskAsynchronously(Dungeons.get(), () -> {
             var rm = Dungeons.get().getRoomManager();
