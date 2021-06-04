@@ -111,10 +111,22 @@ public class EntityListener implements Listener {
 	@EventHandler
 	public void onMobDamagedByPlayer(EntityDamageByEntityEvent e) {
 		if (!(e.getEntity() instanceof Monster)) return;
-		if (!(e.getDamager() instanceof Player)) return;
+
+		boolean isPlayer = false;
+		Player player = null;
+		if (e.getDamager() instanceof Player) {
+			isPlayer = true;
+			player = (Player) e.getDamager();
+		}
+		if (e.getDamager() instanceof Projectile
+				&& ((Projectile) e.getDamager()).getShooter() instanceof Player) {
+			isPlayer = true;
+			player = (Player) ((Projectile) e.getDamager()).getShooter();
+		}
+
+		if (!isPlayer) return;
 
 		var entity = (Monster) e.getEntity();
-		var player = (Player) e.getDamager();
 		for (DStatus status : plugin.getDungeonManager().getStatuses()) {
 			if (status.getTurnStatus().getMobToKills().containsKey(entity)) {
 				Guardeds.setLastEntityTarget(entity, Guardeds.TARGET_COOLDOWN);
