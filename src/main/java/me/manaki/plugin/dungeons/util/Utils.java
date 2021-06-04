@@ -27,6 +27,14 @@ import java.util.Random;
 
 public class Utils {
 
+	public static String setPlaceholders(String s, Player player) {
+		var placeholders = getPlaceholders(player);
+		for (Entry<String, String> e : placeholders.entrySet()) {
+			s = s.replace(e.getKey(), e.getValue());
+		}
+		return s;
+	}
+
 	public static String setPlaceholders(String s, Map<String, String> placeholders) {
 		for (Entry<String, String> e : placeholders.entrySet()) {
 			s = s.replace(e.getKey(), e.getValue());
@@ -38,6 +46,7 @@ public class Utils {
 		Map<String, String> m = Maps.newHashMap();
 		if (!DPlayerUtils.isInDungeon(player)) return m;
 
+		m.put("%world%", DPlayerUtils.getStatus(player).getCache().getWorldCache().toWorldName());
 		var status = DPlayerUtils.getStatus(player);
 		if (status.getCache().getDifficulty() != null) {
 			m.put("%difficulty_color%", status.getCache().getDifficulty().getColor());

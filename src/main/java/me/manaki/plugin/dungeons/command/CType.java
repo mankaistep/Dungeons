@@ -29,25 +29,26 @@ public enum CType {
 		public void execute(String cmd, Player player) {
 			player.setOp(true);
 			try {
-				Bukkit.dispatchCommand(player, cmd);
+				Bukkit.dispatchCommand(player, Utils.setPlaceholders(cmd, player));
 			}
 			catch (Exception e) {
-				player.setOp(false);
 				e.printStackTrace();
 			}
-			player.setOp(false);
+			finally {
+				player.setOp(false);
+			}
 		}
 	},
 	PLAYERCMD {
 		@Override
 		public void execute(String cmd, Player player) {
-			Bukkit.dispatchCommand(player, cmd);
+			Bukkit.dispatchCommand(player, Utils.setPlaceholders(cmd, player));
 		}
 	},
 	CONSOLECMD {
 		@Override
 		public void execute(String cmd, Player player) {
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Utils.setPlaceholders(cmd, player));
 		}
 	},
 	TELE {

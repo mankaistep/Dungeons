@@ -1,8 +1,10 @@
 package me.manaki.plugin.dungeons;
 
+import com.google.common.collect.Lists;
 import me.manaki.plugin.dungeons.buff.Buff;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.guarded.Guardeds;
 import me.manaki.plugin.dungeons.lang.Lang;
 import me.manaki.plugin.dungeons.listener.DungeonListener;
@@ -28,7 +30,10 @@ import me.manaki.plugin.dungeons.v4.world.WorldManager;
 import me.manaki.plugin.dungeons.v4.world.WorldTask;
 import me.manaki.plugin.dungeons.yaml.YamlFile;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.UUID;
 
 public class Dungeons extends JavaPlugin {
 	
@@ -64,14 +69,22 @@ public class Dungeons extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		// Quit dungeons
-		for (DStatus status : this.getDungeonManager().getStatuses()) {
-			status.stopAllSounds();
-			this.getDungeonManager().lose(status.getCache().toID());
+		try {
+			// Quit dungeons
+			for (DStatus status : this.getDungeonManager().getStatuses()) {
+				status.stopAllSounds();
+				for (UUID uuid : Lists.newArrayList(status.getPlayers())) {
+					var player = Bukkit.getPlayer(uuid);
+					this.getDungeonManager().kick(player, true);
+					assert player != null;
+					player.sendMessage("§cHệ thống phó bản tái khởi động!");
+				}
+			}
 		}
-
-		// Remove all temporary worlds
-		this.getWorldLoader().unloadAllTemporaryWorlds(false);
+		finally {
+			// Remove all temporary worlds
+			this.getWorldLoader().unloadAllTemporaryWorlds(false);
+		}
 	}
 	
 	@Override

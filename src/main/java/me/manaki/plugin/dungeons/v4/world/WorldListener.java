@@ -19,7 +19,7 @@ public class WorldListener implements Listener {
     public void onWorldLoad(WorldLoadEvent e) {
         var w = e.getWorld();
         for (String s : plugin.getV4Config().getWorldTemplates().keySet()) {
-            if (w.getName().startsWith(s)) {
+            if (w.getName().startsWith(s + "_")) {
                 plugin.getLogger().warning("Detect temporary world load " + w.getName());
                 w.setKeepSpawnInMemory(false);
                 w.setAutoSave(false);
