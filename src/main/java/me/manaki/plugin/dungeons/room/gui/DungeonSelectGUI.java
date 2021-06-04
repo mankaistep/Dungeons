@@ -91,6 +91,14 @@ public class DungeonSelectGUI {
             var dungeon = entry.getValue();
             if (dungeon.getOption().getGUISlot() == slot) {
                 // Test requirement
+
+                // Perm
+                if (dungeon.getOption().getPermission() != null && !dungeon.getOption().getPermission().equals("")) {
+                    if (!player.hasPermission(dungeon.getOption().getPermission())) {
+                        player.sendMessage("§cKhông thể tham gia phó bản này!");
+                        return;
+                    }
+                }
                 if (dungeon.getOption().getLevel().test(player.getLevel())) {
                     RoomSelectGUI.open(player, id);
                 }

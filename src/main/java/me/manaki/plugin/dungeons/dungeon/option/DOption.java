@@ -18,6 +18,7 @@ public class DOption extends Configable {
 	private boolean allowVelocity;
 	private boolean difficulty;
 	private double spawnRadius;
+	private String permission;
 	
 	public DOption(FileConfiguration config, String path) {
 		super(config, path);
@@ -75,6 +76,10 @@ public class DOption extends Configable {
 		return spawnRadius;
 	}
 
+	public String getPermission() {
+		return permission;
+	}
+
 	@Override
 	public void load(FileConfiguration config, String path) {
 		this.maxTime = config.getInt(path + ".max-time");
@@ -96,6 +101,7 @@ public class DOption extends Configable {
 		}
 		this.difficulty = config.getBoolean(path + ".difficulty");
 		this.spawnRadius = config.getDouble(path + ".spawn-radius", 35);
+		this.permission = config.getString(path + ".permission", "");
 	}
 
 	@Override
@@ -111,6 +117,7 @@ public class DOption extends Configable {
 		config.set(path + ".gui-slot", this.guiSlot);
 		config.set(path + ".spawn-radius", this.spawnRadius);
 		config.set(path + ".difficulty", this.difficulty);
+		config.set(path + ".permission", this.permission);
 	}
 	
 }

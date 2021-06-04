@@ -11,6 +11,7 @@ import me.manaki.plugin.dungeons.guarded.Guardeds;
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.v4.world.WorldCache;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -28,6 +29,25 @@ public class EntityListener implements Listener {
 
 	public EntityListener(Dungeons plugin) {
 		this.plugin = plugin;
+	}
+
+	/*
+	 * Villager interact
+	 */
+	@EventHandler
+	public void onSlaveClick(PlayerInteractAtEntityEvent e) {
+		if (e.getRightClicked() instanceof Villager) {
+			Player player = e.getPlayer();
+			if (DPlayerUtils.isInDungeon(player)) {
+				var entity = e.getRightClicked();
+				var status = DPlayerUtils.getStatus(player);
+				if (status.getTurnStatus().getSlaveToSaves().contains(entity)) {
+					e.setCancelled(true);
+					player.sendMessage("§aGiữ nút Shift để Giải cứu");
+					player.playSound(player.getLocation(), Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, 1, 1);
+				}
+			}
+		}
 	}
 
 	/*

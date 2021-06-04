@@ -33,6 +33,7 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.List;
 import java.util.Objects;
@@ -260,16 +261,27 @@ public class DungeonManager {
                 else if (btask instanceof DGuardedTask) guardedTask = (DGuardedTask) btask;
             }
 
-            // New status
-            status.setTurnStatus(new TStatus());
 
             // Check next
             if (DGameUtils.isLastTurn(dungeonID, turn)) {
+                // If last guarded
+                if (status.getTurnStatus().getGuarded() != null) {
+                    var le = status.getTurnStatus().getGuarded();
+                    le.setAI(true);
+                    Tasks.sync(() -> {
+                        le.setVelocity(new Vector(0, 0.5, 0));
+                    }, 20, 18, 5);
+                }
+
                 if (guardedTask != null) guardedTask.cancel();
                 task.cancel();
                 win(dungeonCache);
             }
-            else startNextTurn(dungeonCache, guardedTask);
+            else {
+                // New status
+                status.setTurnStatus(new TStatus());
+                startNextTurn(dungeonCache, guardedTask);
+            }
         }
     }
 
