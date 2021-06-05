@@ -197,7 +197,7 @@ public enum RoomStatus {
             lore.add("§aĐộ khó: §f" + dfcname);
 
             lore.add("");
-            lore.add("§6Người chơi: §f" + room.getPlayers().size() + "/" + dfc.getLevelRequired().getMax());
+            lore.add("§6Người chơi: §f" + room.getPlayers().size() + "/" + d.getOption().getPlayer().getMax());
 
             lore.add("");
             lore.add("§c§oPhòng trống, xóa phòng sau §c§o§l" + room.getRemoveCountdown() + "s");
