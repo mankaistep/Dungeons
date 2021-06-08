@@ -170,7 +170,7 @@ public class DMobTask extends BukkitRunnable {
 				// Killer
 				Player killer = mob.getKiller();
 				DStatistic s = status.getStatistic(killer);
-				s.addMobKilled(1);
+				if (s != null) s.addMobKilled(1);
 
 				// Event
 				Bukkit.getPluginManager().callEvent(new DungeonMobKilledEvent(dungeon, mobID, mob, killer));
