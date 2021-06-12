@@ -203,6 +203,8 @@ public class PlayerListener implements Listener {
 		if (player.hasPermission("dungeon.teleport")) return;
 
 		Location to = e.getTo();
+		Location from = e.getFrom();
+		if (to.getWorld() == from.getWorld() && to.distanceSquared(from) < 25) return;
 		for (Entry<String, Dungeon> entry : DDataUtils.getDungeons().entrySet()) {
 			var id = entry.getKey();
 			var d = entry.getValue();
