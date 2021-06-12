@@ -157,8 +157,10 @@ public class DSlaveTask extends BukkitRunnable {
 				pn = uuid;
 			}
 		}
+		if (pn == null) return;
 		Player player = Bukkit.getPlayer(pn);
 		Location l = slave.getLocation();
+		if (player == null) return;
 		l.setDirection(player.getLocation().subtract(l).toVector().normalize());
 		try {
 			slave.teleport(l);
