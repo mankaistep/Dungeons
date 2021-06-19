@@ -3,6 +3,7 @@ package me.manaki.plugin.dungeons.v4.dungeon.manager;
 import be.maximvdw.featherboard.api.FeatherBoardAPI;
 import com.google.common.collect.Lists;
 import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.command.CType;
 import me.manaki.plugin.dungeons.command.Command;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.block.DBlock;
