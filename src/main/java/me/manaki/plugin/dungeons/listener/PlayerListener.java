@@ -7,7 +7,9 @@ import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DSlaveUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.sound.DSound;
+import me.manaki.plugin.dungeons.sound.DSoundThread;
 import me.manaki.plugin.dungeons.util.Utils;
 import me.manaki.plugin.dungeons.votekick.KickVote;
 import me.manaki.plugin.dungeons.votekick.KickVotes;
@@ -21,6 +23,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
@@ -29,8 +32,57 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 public class PlayerListener implements Listener {
+
+	private final Dungeons plugin;
+
+	public PlayerListener(Dungeons plugin) {
+		this.plugin = plugin;
+	}
+
+	@EventHandler
+	public void onTeleportSound(PlayerTeleportEvent e) {
+		Bukkit.getScheduler().runTask(Dungeons.get(), () -> {
+			for (Entry<String, DSound> entry : plugin.getV4Config().getSounds().entrySet()) {
+				var dsoundplay = entry.getValue();
+				e.getPlayer().stopSound(dsoundplay.getSource());
+			}
+		});
+	}
+
+	// Res load
+	@EventHandler
+	public void onResLoad(PlayerResourcePackStatusEvent e) {
+		var player = e.getPlayer();
+		Bukkit.getScheduler().runTask(Dungeons.get(), () -> {
+			if (e.getStatus() == PlayerResourcePackStatusEvent.Status.SUCCESSFULLY_LOADED) {
+				var soundPlay = plugin.getV4Config().getSoundPlay("on-resourcepack-load");
+				if (soundPlay == null) {
+					plugin.getLogger().warning("Resourepack load sound null!");
+					return;
+				}
+				var sound = Dungeons.get().getV4Config().getSound(soundPlay.getSounds().get(new Random().nextInt(soundPlay.getSounds().size())));
+				var sthread = new DSoundThread(player, sound, soundPlay.getTimes());
+				if (soundPlay.getDelay() != 0) {
+					Bukkit.getScheduler().runTaskLaterAsynchronously(Dungeons.get(), sthread::start, soundPlay.getDelay());
+				}
+				else sthread.start();
+			}
+		});
+	}
+
+	// Quit
+	@EventHandler
+	public void onQuit(PlayerQuitEvent e) {
+		var player = e.getPlayer();
+		var rm = plugin.getRoomManager();
+		int roomID = rm.getCurrentRoom(player);
+		if (roomID == -1) return;
+		var room = rm.getRoom(roomID);
+		room.removePlayer(player);
+	}
 
 	/*
 	 * Vote kick
@@ -40,9 +92,10 @@ public class PlayerListener implements Listener {
 		Player player = e.getPlayer();
 		if (e.getMessage().equalsIgnoreCase("yes")) {
 			if (!DPlayerUtils.isInDungeon(player)) return;
-			String id = DPlayerUtils.getCurrentDungeon(player);
-			if (!KickVotes.hasVote(id)) return;
-			KickVote vote = KickVotes.get(id);
+			String dungeonCache = DPlayerUtils.getCurrentDungeonCache(player);
+
+			if (!KickVotes.hasVote(dungeonCache)) return;
+			KickVote vote = KickVotes.get(dungeonCache);
 			
 			if (vote.isVoted(player.getName())) {
 				Lang.DUNGEON_VOTE_KICK_VOTED.send(player);
@@ -51,8 +104,9 @@ public class PlayerListener implements Listener {
 			e.setCancelled(true);
 			
 			Lang.DUNGEON_VOTE_KICK_VOTED.send(player);
-			KickVotes.addVote(id, player.getName());
-			DStatus status = DGameUtils.getStatus(id);
+			KickVotes.addVote(dungeonCache, player.getName());
+
+			DStatus status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
 			status.getPlayers().forEach(p -> {
 				Player pVoter = Bukkit.getPlayer(vote.getVoter());
 				Player pTarget = Bukkit.getPlayer(vote.getTarget());
@@ -67,7 +121,7 @@ public class PlayerListener implements Listener {
 			});
 			
 			if (vote.canEndVote(KickVotes.VOTE_TIME)) {
-				KickVotes.endVote(id, true);
+				KickVotes.endVote(dungeonCache, true);
 			}
 		}
 	}
@@ -143,14 +197,18 @@ public class PlayerListener implements Listener {
 	 * Cancel teleport
 	 */
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onTeleport(PlayerTeleportEvent e) {
 		Player player = e.getPlayer();
 		if (player.hasPermission("dungeon.teleport")) return;
 
-		DDataUtils.getDungeons().values().forEach(d -> {
-			Location to = e.getTo();
-			if (d.getInfo().getWorlds().contains(to.getWorld().getName())) {
+		Location to = e.getTo();
+		Location from = e.getFrom();
+		if (to.getWorld() == from.getWorld() && to.distanceSquared(from) < 25) return;
+		for (Entry<String, Dungeon> entry : DDataUtils.getDungeons().entrySet()) {
+			var id = entry.getKey();
+			var d = entry.getValue();
+			if (plugin.getWorldManager().getActiveWorldNames(id).contains(to.getWorld().getName())) {
 				if (!DGameUtils.checkTeleport(player)) {
 					e.setCancelled(true);
 					Lang.DUNGEON_TELEPORT_FAIL.send(player);
@@ -158,23 +216,23 @@ public class PlayerListener implements Listener {
 				}
 				// Check mob nearby
 				else {
-					String id = DPlayerUtils.getCurrentDungeon(player);
-					DStatus status = DGameUtils.getStatus(id);
-					
+					var dungeonCache = DPlayerUtils.getCurrentDungeonCache(player);
+					var status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
+
 					// Check if nearby player = 0
 					if (Utils.countNearBy(player.getLocation(), 20, EntityType.PLAYER) > 1) return;
-					
+
 					// Check if distance > 100
-					for (Entry<LivingEntity, String> entry : status.getTurnStatus().getMobToKills().entrySet()) {
-						LivingEntity le = entry.getKey();
+					for (Entry<LivingEntity, String> entry2 : status.getTurnStatus().getMobToKills().entrySet()) {
+						LivingEntity le = entry2.getKey();
 						if (le.getLocation().distance(to) > 100) {
 							le.teleport(to);
 						}
 					}
 				}
+				return;
 			}
-		});
-		
+		}
 	}
 	
 	/*
@@ -185,12 +243,14 @@ public class PlayerListener implements Listener {
 		if (!(e.getEntity() instanceof Player)) return;
 		Player player = (Player) e.getEntity();
 		if (player.hasPermission("dungeon.teleport")) return;
-		if (DPlayerUtils.getCurrentDungeon(player) == null) return;
-		
-		Dungeon d = DDataUtils.getDungeon(DPlayerUtils.getCurrentDungeon(player));
+		if (DPlayerUtils.getCurrentDungeonCache(player) == null) return;
+
+		var dungeonCache = DPlayerUtils.getCurrentDungeonCache(player);
+		var status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
+		Dungeon d = DDataUtils.getDungeon(status.getCache().getDungeonID());
 		Location l = player.getLocation();
 		
-		if (d.getInfo().getWorlds().contains(l.getWorld().getName())) {
+		if (plugin.getWorldManager().getActiveWorldNames(d.getID()).contains(l.getWorld().getName())) {
 			player.sendMessage("§cKhông thể bay trong dungeon");
 			e.setCancelled(true);
 		}
@@ -204,12 +264,14 @@ public class PlayerListener implements Listener {
 	public void onGlide(PlayerToggleFlightEvent e) {
 		Player player = e.getPlayer();
 		if (player.hasPermission("dungeon.teleport")) return;
-		if (DPlayerUtils.getCurrentDungeon(player) == null) return;
-		
-		Dungeon d = DDataUtils.getDungeon(DPlayerUtils.getCurrentDungeon(player));
+		if (DPlayerUtils.getCurrentDungeonCache(player) == null) return;
+
+		var dungeonCache = DPlayerUtils.getCurrentDungeonCache(player);
+		var status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
+		Dungeon d = DDataUtils.getDungeon(status.getCache().getDungeonID());
 		Location l = player.getLocation();
 		
-		if (d.getInfo().getWorlds().contains(l.getWorld().getName())) {
+		if (plugin.getWorldManager().getActiveWorldNames(d.getID()).contains(l.getWorld().getName())) {
 			player.sendMessage("§cKhông thể bay trong dungeon");
 			e.setCancelled(true);
 		}
@@ -223,13 +285,16 @@ public class PlayerListener implements Listener {
 	public void onVelocity(PlayerVelocityEvent e) {
 		Player player = e.getPlayer();
 		if (player.hasPermission("dungeon.teleport")) return;
-		if (DPlayerUtils.getCurrentDungeon(player) == null) return;
-		
-		Dungeon d = DDataUtils.getDungeon(DPlayerUtils.getCurrentDungeon(player));
+		if (DPlayerUtils.getCurrentDungeonCache(player) == null) return;
+
+		var dungeonCache = DPlayerUtils.getCurrentDungeonCache(player);
+		var status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
+		Dungeon d = DDataUtils.getDungeon(status.getCache().getDungeonID());
 		if (d.getOption().isVelocityAllowed()) return;
+
 		Location l = player.getLocation();
 		
-		if (d.getInfo().getWorlds().contains(l.getWorld().getName())) {
+		if (plugin.getWorldManager().getActiveWorldNames(d.getID()).contains(l.getWorld().getName())) {
 			player.sendMessage("§cHành động đã bị chặn trong dungeon này");
 			e.setCancelled(true);
 		}
@@ -246,7 +311,5 @@ public class PlayerListener implements Listener {
 			if (DPlayerUtils.isGod(player)) e.setCancelled(true);
 		}
 	}
-	
-	
 	
 }

@@ -9,12 +9,13 @@ import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.rank.Rank;
 import me.manaki.plugin.dungeons.rank.RankUtils;
 import me.manaki.plugin.dungeons.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -22,49 +23,54 @@ import org.bukkit.metadata.FixedMetadataValue;
 import java.util.List;
 
 public enum CType {
-	
+
 	OPPLAYERCMD {
 		@Override
 		public void execute(String cmd, Player player) {
 			player.setOp(true);
 			try {
-				Bukkit.dispatchCommand(player, cmd);
+				Bukkit.dispatchCommand(player, Utils.setPlaceholders(cmd, player));
 			}
 			catch (Exception e) {
-				player.setOp(false);
 				e.printStackTrace();
 			}
-			player.setOp(false);
+			finally {
+				player.setOp(false);
+			}
 		}
 	},
 	PLAYERCMD {
 		@Override
 		public void execute(String cmd, Player player) {
-			Bukkit.dispatchCommand(player, cmd);
+			Bukkit.dispatchCommand(player, Utils.setPlaceholders(cmd, player));
 		}
 	},
 	CONSOLECMD {
 		@Override
 		public void execute(String cmd, Player player) {
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Utils.setPlaceholders(cmd, player));
 		}
 	},
 	TELE {
 		@Override
 		public void execute(String cmd, Player player) {
-			String d = DPlayerUtils.getCurrentDungeon(player);
-			Dungeon dg = DDataUtils.getDungeon(d);
+			var cacheID = DPlayerUtils.getCurrentDungeonCache(player);
+			var status = Dungeons.get().getDungeonManager().getStatus(cacheID);
+			var dungeonID = status.getCache().getDungeonID();
+			var world = status.getCache().getWorldCache().toWorld();
+			Dungeon dg = DDataUtils.getDungeon(dungeonID);
 			DLocation dl = dg.getLocations().getOrDefault(cmd, null);
 			if (dl == null) {
 				player.sendMessage(Utils.c("&cLỗi location, thông báo quản trị viên để fix"));
 			}
-			DGameUtils.teleport(player, dl.getLocation());
+			DGameUtils.teleport(player, dl.getLocation(world));
 		}
 	},
 	MESS {
 		@Override
 		public void execute(String cmd, Player player) {
-			player.sendMessage(Utils.c(cmd));
+			var placeholders = Utils.getPlaceholders(player);
+			player.sendMessage((Utils.setPlaceholders(Utils.c(cmd), placeholders)));
 		}
 	},
 	BROADCAST {
@@ -78,6 +84,7 @@ public enum CType {
 	TITLE {
 		@Override
 		public void execute(String cmd, Player player) {
+			var placeholders = Utils.getPlaceholders(player);
 			String t = cmd.split(";")[0];
 			String s = cmd.split(";")[1];
 			int i1 = 10;
@@ -88,7 +95,7 @@ public enum CType {
 				i2 = Integer.valueOf(cmd.split(";")[3]);
 				i3 = Integer.valueOf(cmd.split(";")[4]);
 			}
-			player.sendTitle(Utils.c(t), Utils.c(s), i1, i2, i3);
+			player.sendTitle(Utils.setPlaceholders(Utils.c(t), placeholders), Utils.setPlaceholders(Utils.c(s), placeholders), i1, i2, i3);
 		}
 	},
 	SOUND {
@@ -103,9 +110,10 @@ public enum CType {
 	SHOWRANK {
 		@Override
 		public void execute(String cmd, Player player) {
-			String id = DPlayerUtils.getCurrentDungeon(player);
-			DStatus status = DGameUtils.getStatus(id);
-			Rank r = RankUtils.getRank(id, status.getStatistic(player));
+			var cacheID = DPlayerUtils.getCurrentDungeonCache(player);
+			var status = Dungeons.get().getDungeonManager().getStatus(cacheID);
+			var dungeonID = status.getCache().getDungeonID();
+			Rank r = RankUtils.getRank(dungeonID, status.getStatistic(player));
 			RankUtils.showRank(player, r);
 		}
 	},
@@ -114,10 +122,8 @@ public enum CType {
 		public void execute(String cmd, Player player) {
 			List<String> kills = cmd.equals("*") ? null : Lists.newArrayList(cmd.split(";"));
 			DStatus s = DPlayerUtils.getStatus(player);
-			if (kills == null || (kills != null && kills.contains("slave"))) {
-				s.getTurnStatus().getSlaveToSaves().forEach(le -> {
-					le.remove();
-				});
+			if (kills == null || kills.contains("slave")) {
+				s.getTurnStatus().getSlaveToSaves().forEach(Entity::remove);
 			}
 			s.getTurnStatus().getMobToKills().forEach((le, id) -> {
 				if (kills != null) {
@@ -134,7 +140,9 @@ public enum CType {
 			});
 			if (s.getTurnStatus().getGuarded() != null) {
 				int currentTurn = s.getTurn();
-				String id = DPlayerUtils.getCurrentDungeon(player);
+				var cacheID = Dungeons.get().getDungeonManager().getCurrentDungeonCache(player);
+				var status = Dungeons.get().getDungeonManager().getStatus(cacheID);
+				String id = status.getCache().getDungeonID();
 				if (!DGameUtils.isLastTurn(id, currentTurn)) {
 					int nextTurn = currentTurn + 1;
 					var turn = DDataUtils.getDungeon(id).getTurn(currentTurn);
@@ -145,9 +153,9 @@ public enum CType {
 			if (s.getTurnStatus().getGuarded() != null) s.getTurnStatus().getGuarded().remove();
 		}
 	};
-	
-	private CType() {}
-	
+
+	CType() {}
+
 	public abstract void execute(String cmd, Player player);
-	
+
 }

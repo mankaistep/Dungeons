@@ -5,23 +5,27 @@ import io.lumine.xikage.mythicmobs.mobs.ActiveMob;
 import me.manaki.plugin.dungeons.dungeon.event.DungeonMobKilledEvent;
 import me.manaki.plugin.dungeons.dungeon.moneycoin.DMoneyCoin;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.util.Tasks;
 import me.manaki.plugin.shops.storage.ItemStorage;
 import me.manaki.plugin.dungeons.buff.Buff;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.player.DPlayer;
 import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.util.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
 public class DMobTask extends BukkitRunnable {
+
+	private final int SPAWN_DELAY_TICK = 30;
 
 	private String dungeon;
 	private String mobID;
@@ -35,36 +39,60 @@ public class DMobTask extends BukkitRunnable {
 		this.mobID = mobID;
 		this.status = status;
 		this.isSpawned = false;
-		this.loc = loc;
+		this.loc = loc.getBlock().getLocation().add(0.5, 0, 0.5);
+	}
+
+	public void start() {
 		this.runTaskTimer(Dungeons.get(), 0, 20);
+	}
+
+	public Location getLocation() {
+		return loc;
 	}
 
 	@Override
 	public void run() {
-		checkSpawn();
-		checkLocation();
-		checkValid();
+		if (status.isEnded()) {
+			this.cancel();
+			return;
+		}
+		try {
+			checkSpawn();
+			checkLocation();
+			checkValid();
+		}
+		catch (IllegalArgumentException e) {
+			Dungeons.get().getLogger().severe("Mob task catch IllegalArgumentException");
+			Dungeons.get().getLogger().severe("Maybe for UnloadedWorld? -> Stop task");
+			this.cancel();
+		}
 	}
 
 	public void checkSpawn() {
 		if (isSpawned) return;
+
+		// Has near player
 		var d = DDataUtils.getDungeon(dungeon);
 		boolean hasPlayerNear = false;
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			if (player.getWorld() == loc.getWorld()) {
-				if (player.getLocation().distance(loc) <= d.getOption().getSpawnRadius()) {
+				if (player.getLocation().distance(loc) < d.getOption().getSpawnRadius()) {
 					hasPlayerNear = true;
 					break;
 				}
 			}
 		}
-		if (hasPlayerNear) {
-			spawn();
-		}
+		if (!hasPlayerNear) return;
+
+		// Spawn
+		spawn();
 	}
 
 	public void spawn() {
-		ActiveMob activeMob = MythicMobs.inst().getMobManager().spawnMob(mobID, loc);
+		var d = DDataUtils.getDungeon(dungeon);
+		var dct = status.getCache().getDifficulty();
+		var mythicmobID = d.getMob(this.mobID, dct);
+		ActiveMob activeMob = MythicMobs.inst().getMobManager().spawnMob(mythicmobID, loc);
 		LivingEntity le = (LivingEntity) activeMob.getEntity().getBukkitEntity();
 		le.setRemoveWhenFarAway(false);
 		this.mob = le;
@@ -75,9 +103,15 @@ public class DMobTask extends BukkitRunnable {
 		le.setRemoveWhenFarAway(false);
 		le.setMetadata("Dungeon3", new FixedMetadataValue(Dungeons.get(), this.mobID));
 
-		Dungeon d = DDataUtils.getDungeon(dungeon);
 		if (d.getOption().isMobGlow())
 			le.setGlowing(true);
+
+		for (UUID uuid : status.getPlayers()) {
+			var player = Bukkit.getPlayer(uuid);
+			if (player == null) continue;
+			player.playSound(le.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
+			player.spawnParticle(Particle.PORTAL, le.getLocation(), 20, 0.3f, 0.3f, 0.3f, 0.5);
+		}
 	}
 
 	public void checkLocation() {
@@ -119,6 +153,7 @@ public class DMobTask extends BukkitRunnable {
 			if (mob.hasMetadata("commandKilled")) return;
 
 			status.getTurnStatus().removeMobToKill(mob);
+			status.getTurnStatus().removeCurrentMobs(1);
 
 			// Turn
 			status.getTurnStatus().getStatistic().addMobKilled(1);
@@ -135,7 +170,7 @@ public class DMobTask extends BukkitRunnable {
 				// Killer
 				Player killer = mob.getKiller();
 				DStatistic s = status.getStatistic(killer);
-				s.addMobKilled(1);
+				if (s != null) s.addMobKilled(1);
 
 				// Event
 				Bukkit.getPluginManager().callEvent(new DungeonMobKilledEvent(dungeon, mobID, mob, killer));

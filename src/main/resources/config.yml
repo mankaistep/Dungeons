@@ -1,28 +1,132 @@
-# **Commands
-# {5} >> Delay 5 ticks, [playercmd] <cmd>, [opplayercmd] <cmd>, [consolecmd] <cmd>,[tele] <location>, [mess] <message>, [broadcast] <message>, [title] <title;subtitle>, [kill] <mob;mob2(*=all)(slave=slave)>, [sound] <sound>;f1;f2, [showrank]
-# **Available GUI Dungeon Slots: 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26
+# Commands
+# {5} >> Delay 5 ticks
+# [playercmd] <cmd>
+# [opplayercmd] <cmd>
+# [consolecmd] <cmd>
+# [tele] <location>
+# [mess] <message>
+# [broadcast] <message>
+# [title] <title;subtitle>
+# [kill] <mob;mob2(*=all)(slave=slave)>
+# [sound] <sound>;f1;f2
+# [showrank]
+# Rank: S, A, B, C, D, F
 
-# Buff rate
-buff:
-  drop: 0.5
+sound-play:
+  on-resourcepack-load:
+    delay: 0
+    play-times: 3
+    sounds:
+      - theme1
+  on-start-dungeon:
+    delay: 10
+    play-times: -1
+    sounds:
+      - background1
+      - background2
+      - background3
+      - background4
+      - background5
+      - background6
+      - background7
+      - background8
+  on-boss-dungeon:
+    delay: 10
+    play-times: -1
+    sounds:
+      - boss1
+      - boss2
+      - boss3
+      - boss4
+  on-win-dungeon:
+    delay: 0
+    play-times: 1
+    sounds:
+      - victory1
+      - victory2
+      - victory3
+sounds:
+  background1:
+    source: 'dungeon.background.1'
+    length: 15484
+  background2:
+    source: 'dungeon.background.2'
+    length: 10105
+  background3:
+    source: 'dungeon.background.3'
+    length: 21333
+  background4:
+    source: 'dungeon.background.4'
+    length: 13091
+  background5:
+    source: 'dungeon.background.5'
+    length: 20426
+  background6:
+    source: 'dungeon.background.6'
+    length: 13241
+  background7:
+    source: 'dungeon.background.7'
+    length: 16000
+  background8:
+    source: 'dungeon.background.8'
+    length: 12000
+  theme1:
+    source: 'dungeon.theme.1'
+    length: 20211
+  victory1:
+    source: 'dungeon.victory.1'
+    length: 7416
+  victory2:
+    source: 'dungeon.victory.2'
+    length: 8332
+  victory3:
+    source: 'dungeon.victory.3'
+    length: 4000
+  boss1:
+    source: 'dungeon.boss.1'
+    length: 12000
+  boss2:
+    source: 'dungeon.boss.2'
+    length: 17455
+  boss3:
+    source: 'dungeon.boss.3'
+    length: 19200
+  boss4:
+    source: 'dungeon.boss.4'
+    length: 22818
 
-# Featherboard hook
+room:
+  room-limit: 10
+  world-last-time: 3600
+  room-count-down: 60
+  remove-room-count-down: 5
+
+world:
+  world_template_1:
+    # NORMAL/NETHER/THE_END
+    environment: NORMAL
+    # Can add if u need those behind
+    #type: NORMAL
+    #seed: 0
+    #generator: something
+
 featherboard:
   enable: true
   board: dungeon
 
-# Ticket item
 ticket:
   item:
-    name: '&6&lVé &e&l%dungeon_name%'
-    type: GOLD_INGOT
-    data: 4
+    name: '&6&lVé phó bản &e&l%dungeon_name%'
+    type: DIAMOND
+    data: 13
     lore:
     - '&7&oDùng để vào hàng chờ phó bản'
     enchant: []
     flag: []
 
-# Rank requirement
+buff:
+  drop: 1.5
+
 rank:
   S:
     kill: 90
@@ -55,13 +159,15 @@ rank:
     time: 70
     dead: 100
 
-# **Slave & Guarded color
-# 1, 6, 8: Default + tạp đề
+# Professions:
+# 1: Default + tạp đề
 # 2: Default
 # 3: White
 # 4: Purple
-# 5: Default + Áo đen
+# 5: Default + black shirt
+# 6: 1
 # 7: Green
+# 8: 1
 slave:
   slv1:
     name: '&6&lSteve'
@@ -69,6 +175,7 @@ slave:
   slv2:
     name: '&f&lJohn'
     color: 3
+
 guarded:
   g1:
    name: '&f&lJohn'
@@ -76,7 +183,6 @@ guarded:
    health: 30
    target-radius: 10
 
-# GUI
 gui:
   size: 27
   background:
@@ -131,5 +237,3 @@ gui:
       lore: []
       enchant: []
       flag: []
-
-    

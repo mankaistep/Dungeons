@@ -39,7 +39,6 @@ public class DPlayer {
 	public static DPlayer from(Player p) {
 		double dr = 0;
 		int rb = 0;
-
 		if (p != null) {
 			for (PermissionAttachmentInfo perm : p.getEffectivePermissions()) {
 				var node = perm.getPermission();
@@ -47,7 +46,6 @@ public class DPlayer {
 				if (node.contains(REVIVE_RATE_PERM)) rb = Math.max(rb, Integer.parseInt(node.replace(REVIVE_RATE_PERM, "")));
 			}
 		}
-
 		return new DPlayer(dr, rb);
 	}
 	

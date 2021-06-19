@@ -1,14 +1,13 @@
 package me.manaki.plugin.dungeons.dungeon.task;
 
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
-import me.manaki.plugin.dungeons.dungeon.manager.DGameEnds;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.guarded.Guarded;
 import me.manaki.plugin.dungeons.guarded.Guardeds;
 import me.manaki.plugin.dungeons.lang.Lang;
-import me.manaki.plugin.dungeons.main.Dungeons;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -40,11 +39,22 @@ public class DGuardedTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        checkSpawn();
-        checkLocation();
-        checkValid();
-        checkTarget();
-        entityLook();
+        if (status.isEnded()) {
+            this.cancel();
+            return;
+        }
+        try {
+            checkSpawn();
+            checkLocation();
+            checkValid();
+            checkTarget();
+            entityLook();
+        }
+        catch (IllegalArgumentException e) {
+            Dungeons.get().getLogger().severe("Mob task catch IllegalArgumentException");
+            Dungeons.get().getLogger().severe("Maybe for UnloadedWorld? -> Stop task");
+            this.cancel();
+        }
     }
 
     public void checkTarget() {
@@ -105,19 +115,23 @@ public class DGuardedTask extends BukkitRunnable {
         if (this.isCancelled()) return;
         if (!isSpawned) return;
         if (!entity.isValid()) {
+            // Cancel task
+            this.cancel();
+
+            // Check if end
+            if (status.isEnded()) return;
+
             // Check Lose Req
             Dungeon d = DDataUtils.getDungeon(this.dungeonID);
             DTurn turn = d.getTurn(status.getTurn());
             if (turn.getLoseRequirement().getGuardedKilled() != null) {
                 if (turn.getLoseRequirement().getGuardedKilled().equalsIgnoreCase(this.id)) {
                     // Lose turn
-                    DGameEnds.loseTurn(this.dungeonID, status.getTurn());
+                    Dungeons.get().getDungeonManager().lose(status.getCache().toID());
                     Lang.DUNGEON_LOSE_GUARDED_DEATH.broadcast("%dungeon%", d.getInfo().getName());;
                 }
             }
 
-            // Cancel task
-            this.cancel();
         }
     }
 

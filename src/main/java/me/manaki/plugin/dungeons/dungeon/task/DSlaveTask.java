@@ -6,7 +6,7 @@ import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DSlaveUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.slave.Slaves;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.slave.Slave;
@@ -50,11 +50,22 @@ public class DSlaveTask extends BukkitRunnable {
 	
 	@Override
 	public void run() {
-		checkSpawn();
-		checkLocation();
-		checkValid();
-		checkScream();
-		playerLook();
+		if (status.isEnded()) {
+			this.cancel();
+			return;
+		}
+		try {
+			checkSpawn();
+			checkLocation();
+			checkValid();
+			checkScream();
+			playerLook();
+		}
+		catch (IllegalArgumentException e) {
+			Dungeons.get().getLogger().severe("Mob task catch IllegalArgumentException");
+			Dungeons.get().getLogger().severe("Maybe for UnloadedWorld? -> Stop task");
+			this.cancel();
+		}
 	}
 	
 	public void checkScream() {
@@ -136,7 +147,6 @@ public class DSlaveTask extends BukkitRunnable {
 		if (!isSpawned) return;
 		if (System.currentTimeMillis() < lastLook + LOOK_COOLDOWN) return;
 		lastLook = System.currentTimeMillis();
-		DStatus status = DGameUtils.getStatus(this.dungeon);
 		UUID pn = null;
 		double min = 9999;
 		for (UUID uuid : status.getPlayers()) {
@@ -147,8 +157,10 @@ public class DSlaveTask extends BukkitRunnable {
 				pn = uuid;
 			}
 		}
+		if (pn == null) return;
 		Player player = Bukkit.getPlayer(pn);
 		Location l = slave.getLocation();
+		if (player == null) return;
 		l.setDirection(player.getLocation().subtract(l).toVector().normalize());
 		try {
 			slave.teleport(l);

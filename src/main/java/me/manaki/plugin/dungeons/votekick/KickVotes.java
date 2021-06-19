@@ -2,7 +2,7 @@ package me.manaki.plugin.dungeons.votekick;
 
 import com.google.common.collect.Maps;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.util.Utils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
@@ -20,10 +20,10 @@ public class KickVotes {
 	
 	private static Map<String, KickVote> votes = Maps.newHashMap();
 	
-	public static void endVote(String id, boolean yes) {
-		KickVote vote = votes.get(id);
-		votes.remove(id);
-		DStatus status = DGameUtils.getStatus(id);
+	public static void endVote(String dungeonCache, boolean yes) {
+		KickVote vote = votes.get(dungeonCache);
+		votes.remove(dungeonCache);
+		DStatus status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
 		Player target = Bukkit.getPlayer(vote.getTarget());
 		if (yes) {
 			status.getPlayers().stream().map(Bukkit::getPlayer).collect(Collectors.toList()).forEach(p -> {
@@ -31,7 +31,7 @@ public class KickVotes {
 				Lang.DUNGEON_VOTE_KICK_YES.send(p, "%target%", target.getName());
 			});;
 			Bukkit.getScheduler().runTask(Dungeons.get(), () -> {
-//				target.teleport(Utils.getPlayerSpawn());
+				//target.teleport(Utils.getPlayerSpawn());
 				Utils.toSpawn(target);
 			});
 		}
@@ -52,16 +52,16 @@ public class KickVotes {
 		vote.addVoteYes(player);
 	}
 	
-	public static boolean hasVote(String id) {
-		return votes.containsKey(id);
+	public static boolean hasVote(String dungeonCache) {
+		return votes.containsKey(dungeonCache);
 	}
 	
-	public static void voteKick(String id, UUID target, UUID voter) {
-		DStatus status = DGameUtils.getStatus(id);
+	public static void voteKick(String dungeonCache, UUID target, UUID voter) {
+		DStatus status = Dungeons.get().getDungeonManager().getStatus(dungeonCache);
 		if (status == null) return;
 		long start = System.currentTimeMillis();
-		KickVote vote = new KickVote(id, target, voter, status.getPlayers().size(), start);
-		votes.put(id, vote);
+		KickVote vote = new KickVote(dungeonCache, target, voter, status.getPlayers().size(), start);
+		votes.put(dungeonCache, vote);
 		
 		Player pVoter = Bukkit.getPlayer(voter);
 		Player pTarget = Bukkit.getPlayer(target);
@@ -85,10 +85,10 @@ public class KickVotes {
 		});
 		
 		Bukkit.getScheduler().runTaskLater(Dungeons.get(), () -> {
-			if (hasVote(id)) {
-				KickVote kv = get(id);
+			if (hasVote(dungeonCache)) {
+				KickVote kv = get(dungeonCache);
 				if (kv.getStart() == start) {
-					endVote(id, false);
+					endVote(dungeonCache, false);
 				}
 			}
 		}, VOTE_TIME / 50);

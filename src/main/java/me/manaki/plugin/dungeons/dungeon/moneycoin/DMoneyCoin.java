@@ -1,6 +1,6 @@
 package me.manaki.plugin.dungeons.dungeon.moneycoin;
 
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;

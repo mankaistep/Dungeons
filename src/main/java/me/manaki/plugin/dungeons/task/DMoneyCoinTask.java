@@ -2,7 +2,7 @@ package me.manaki.plugin.dungeons.task;
 
 import com.google.common.collect.Lists;
 import me.manaki.plugin.dungeons.dungeon.moneycoin.DMoneyCoin;
-import me.manaki.plugin.dungeons.main.Dungeons;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.moneyapi.MoneyAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;

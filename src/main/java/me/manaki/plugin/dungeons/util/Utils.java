@@ -1,15 +1,24 @@
 package me.manaki.plugin.dungeons.util;
 
-import com.earth2me.essentials.spawn.EssentialsSpawn;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.dungeon.location.DLocation;
+import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
+import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +27,41 @@ import java.util.Random;
 
 public class Utils {
 
+	public static String setPlaceholders(String s, Player player) {
+		var placeholders = getPlaceholders(player);
+		for (Entry<String, String> e : placeholders.entrySet()) {
+			s = s.replace(e.getKey(), e.getValue());
+		}
+		return s;
+	}
+
+	public static String setPlaceholders(String s, Map<String, String> placeholders) {
+		for (Entry<String, String> e : placeholders.entrySet()) {
+			s = s.replace(e.getKey(), e.getValue());
+		}
+		return s;
+	}
+
+	public static Map<String, String> getPlaceholders(Player player) {
+		Map<String, String> m = Maps.newHashMap();
+		if (!DPlayerUtils.isInDungeon(player)) return m;
+
+		m.put("%world%", DPlayerUtils.getStatus(player).getCache().getWorldCache().toWorldName());
+		var status = DPlayerUtils.getStatus(player);
+		if (status.getCache().getDifficulty() != null) {
+			m.put("%difficulty_color%", status.getCache().getDifficulty().getColor());
+			m.put("%difficulty_name%", status.getCache().getDifficulty().getName());
+		}
+
+		return m;
+	}
+
+	public static ItemStack getBackIcon() {
+		var is = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+		var ism = new ItemStackManager(is);
+		ism.setName("§f");
+		return is;
+	}
 
 	public static Entity getNearest(Location l, double r, EntityType type) {
 		double min = Double.MAX_VALUE;
@@ -106,15 +150,7 @@ public class Utils {
 		}
 		return newL;
 	}
-	
-//	public static Location getPlayerSpawn() {
-//		return ((EssentialsSpawn) Bukkit.getPluginManager().getPlugin("EssentialsSpawn")).getSpawn("default");
-//	}
 
-	public static void toSpawn(Player player) {
-		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
-	}
-	
 	public static String getFormat(int second) {
 		String s = "";
 		int minute = second / 60;
@@ -186,6 +222,48 @@ public class Utils {
 			log = log.replace(e.getKey(), e.getValue());
 		}
 		log(log);
+	}
+
+	public static double distance(DLocation dl, Location l) {
+		var dx = dl.getX() - l.getX();
+		var dy = dl.getY() - l.getY();
+		var dz = dl.getZ() - l.getZ();
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
+	public static void toSpawn(Player player) {
+		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
+	}
+
+	public static void clearWorldGuardTemporaryData() {
+		var plugin = Dungeons.get();
+		var path = plugin.getDataFolder().getPath().replace("Dungeons", "WorldGuard//worlds");
+		var folder = new File(path);
+		File[] files = folder.listFiles();
+		assert files != null;
+		for (File file : files) {
+			var name = file.getName();
+			for (String world : plugin.getV4Config().getWorldTemplates().keySet()) {
+				if (name.startsWith(world)) {
+					try {
+						FileUtils.deleteDirectory(file);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					plugin.getLogger().warning("Delete config " + name + " from WorldGuard");
+				}
+			}
+		}
+	}
+
+	public static Location getGroundBlock(Location loc) {
+		Location locBelow = loc.clone();
+		if (locBelow.getY() <= -64) return locBelow;
+		if(locBelow.getBlock().getType() == Material.AIR) {
+			locBelow = loc.subtract(0, 1, 0);
+			locBelow = getGroundBlock(locBelow);
+		}
+		return locBelow;
 	}
 	
 }

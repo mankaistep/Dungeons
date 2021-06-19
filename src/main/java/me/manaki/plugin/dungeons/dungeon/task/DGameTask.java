@@ -1,6 +1,7 @@
 package me.manaki.plugin.dungeons.dungeon.task;
 
-import me.manaki.plugin.dungeons.dungeon.manager.DGameEnds;
+import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import me.manaki.plugin.dungeons.dungeon.statistic.DStatistic;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.turn.DTurn;
@@ -9,9 +10,7 @@ import me.manaki.plugin.dungeons.dungeon.turn.status.TStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
-import me.manaki.plugin.dungeons.main.Dungeons;
 import me.manaki.plugin.dungeons.util.Utils;
-import me.manaki.plugin.dungeons.dungeon.Dungeon;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
@@ -20,20 +19,27 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.List;
 
 public class DGameTask extends BukkitRunnable {
+
+	private final Dungeons plugin;
+
+	private final String dungeonCache;
+	private final DStatus status;
+	private final long start;
 	
-	private String dungeon;
-	private DStatus status;
-	private long start;
-	
-	public DGameTask(String dungeon, DStatus status, long start) {
-		this.dungeon = dungeon;
+	public DGameTask(String dungeonCache, DStatus status, long start) {
+		this.dungeonCache = dungeonCache;
 		this.status = status;
 		this.start = start;
 		this.runTaskTimer(Dungeons.get(), 0, 5);
+		this.plugin = Dungeons.get();
 	}
 	
 	@Override
 	public void run() {
+		if (status.isEnded()) {
+			this.cancel();
+			return;
+		}
 		setBossBar();
 		checkDungeon();
 		checkWinTurn();
@@ -55,7 +61,8 @@ public class DGameTask extends BukkitRunnable {
 	public void setBossBar() {
 		BossBar bb = status.getBossBar();
 		if (bb == null) return;
-		Dungeon d = DDataUtils.getDungeon(dungeon);
+		var dungeonID = status.getCache().getDungeonID();
+		Dungeon d = DDataUtils.getDungeon(dungeonID);
 		int remain = d.getOption().getMaxTime() - new Long((System.currentTimeMillis() - start) / 1000).intValue();
 		bb.setTitle("§c§l" + d.getInfo().getName() + " §f§l" + Utils.getFormat(remain));
 		double progress = (double) remain / d.getOption().getMaxTime();
@@ -64,28 +71,29 @@ public class DGameTask extends BukkitRunnable {
 	}
 	
 	public void checkDungeon() {
-		Dungeon d = DDataUtils.getDungeon(dungeon);
+		var dungeonID = status.getCache().getDungeonID();
+		Dungeon d = DDataUtils.getDungeon(dungeonID);
 		if (status.getPlayers().size() == 0) {
 			Lang.DUNGEON_LOSE_NOPLAYER.broadcast("%dungeon%", d.getInfo().getName());
-			DGameEnds.loseDungeon(dungeon);
+			plugin.getDungeonManager().lose(dungeonCache);
 			this.cancel();
 			return;
 		}
-		if (System.currentTimeMillis() - start >= d.getOption().getMaxTime() * 1000) {
+		if (System.currentTimeMillis() - start >= d.getOption().getMaxTime() * 1000L) {
 			Lang.DUNGEON_LOSE_OVERTIME.broadcast("%dungeon%", d.getInfo().getName());
-			DGameEnds.loseTurn(dungeon, status.getTurn());
+			plugin.getDungeonManager().lose(dungeonCache);
 			this.cancel();
-			return;
 		}
 	}
 	
 	public void checkWinTurn() {
 		if (!canWinTurn()) return;
-		DGameEnds.winTurn(dungeon, status.getTurn(), this);
+		plugin.getDungeonManager().win(dungeonCache, status.getTurn(), this);
 	}
 	
 	public boolean canWinTurn() {
-		DTurn turn = DGameUtils.getTurn(dungeon, status.getTurn());
+		var dungeonID = status.getCache().getDungeonID();
+		DTurn turn = DGameUtils.getTurn(dungeonID, status.getTurn());
 		TStatus ts = status.getTurnStatus();
 		TWinReq wr = turn.getWinRequirement();
 
@@ -98,7 +106,7 @@ public class DGameTask extends BukkitRunnable {
 		boolean killAll = wr.isKillAll();
 		if (killAll) {
 			int sum = DGameUtils.countMobs(turn);
-			if (ts.getStatistic().getMobKilled() < sum) return false;
+			return ts.getStatistic().getMobKilled() >= sum;
 		}
 		else {
 			// Kill

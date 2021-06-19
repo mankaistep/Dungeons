@@ -1,32 +1,40 @@
 package me.manaki.plugin.dungeons.dungeon.task;
 
-import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
+import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.dungeon.Dungeon;
-import me.manaki.plugin.dungeons.dungeon.manager.DGamePlays;
 import me.manaki.plugin.dungeons.dungeon.status.DStatus;
+import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
+import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import me.manaki.plugin.dungeons.lang.Lang;
-import me.manaki.plugin.dungeons.main.Dungeons;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class DPlayerTask extends BukkitRunnable {
-	
-	private Player player;
-	private String dungeon;
-	private DStatus status;
+
+	private final Dungeons plugin;
+
+	private final Player player;
+	private final String dungeon;
+	private final DStatus status;
 	
 	public DPlayerTask(Player player, String dungeon, DStatus status) {
 		this.player = player;
 		this.dungeon = dungeon;
 		this.status = status;
 		this.runTaskTimer(Dungeons.get(), 0, 5);
+		this.plugin = Dungeons.get();
 	}
 	
 	@Override
 	public void run() {
+		if (status.isEnded()) {
+			this.cancel();
+			return;
+		}
+
 		if (!checkResult()) return;
 		if (!checkOnline()) return;
 		if (!checkPlace()) return;
@@ -45,7 +53,7 @@ public class DPlayerTask extends BukkitRunnable {
 	
 	public boolean checkOnline() {
 		if (!player.isOnline()) {
-			DGamePlays.kick(player, false);
+			plugin.getDungeonManager().kick(player, false);
 			this.cancel();
 			return false;
 		}
@@ -64,8 +72,14 @@ public class DPlayerTask extends BukkitRunnable {
 	
 	public boolean checkPlace() {
 		Dungeon d = DDataUtils.getDungeon(dungeon);
-		if (!d.getInfo().getWorlds().contains(player.getWorld().getName())) {
-			DGamePlays.kick(player, false);
+		var cacheID = DPlayerUtils.getDungeonCachePlayerStandingOn(player);
+		if (cacheID == null) {
+			plugin.getDungeonManager().kick(player, false);
+			return false;
+		}
+		var status = plugin.getDungeonManager().getStatus(cacheID);
+		if (!status.getCache().getWorldCache().toWorld().getName().equalsIgnoreCase(player.getWorld().getName())) {
+			plugin.getDungeonManager().kick(player, false);
 			this.cancel();
 			return false;
 		}
@@ -81,18 +95,18 @@ public class DPlayerTask extends BukkitRunnable {
 		Material m = player.getLocation().getBlock().getType();
 		if (d.getRule().isLavaDead()) {
 			if (m == Material.LAVA) {
-				DGamePlays.dead(player, true);
+				plugin.getDungeonManager().dead(player, true);
 				return false;
 			}
 		}
 		if (d.getRule().isWaterDead()) {
 			if (m == Material.WATER) {
-				DGamePlays.dead(player, true);
+				plugin.getDungeonManager().dead(player, true);
 				return false;
 			}
 		}
 		if (player.getLocation().getY() <= d.getRule().getYDead()) {
-			DGamePlays.dead(player, true);
+			plugin.getDungeonManager().dead(player, true);
 			return false;
 		}
 		

@@ -19,6 +19,9 @@ public class DOption extends Configable {
 	private Material guiIcon;
 	private int cooldown;
 	private boolean allowVelocity;
+	private boolean difficulty;
+	private double spawnRadius;
+	private String permission;
 	
 	public DOption(FileConfiguration config, String path) {
 		super(config, path);
@@ -72,7 +75,19 @@ public class DOption extends Configable {
 	public boolean isTicketRequired() {
 		return this.ticketRequired;
 	}
-	
+
+	public boolean hasDifficulty() {
+		return difficulty;
+	}
+
+	public double getSpawnRadius() {
+		return spawnRadius;
+	}
+
+	public String getPermission() {
+		return permission;
+	}
+
 	@Override
 	public void load(FileConfiguration config, String path) {
 		this.spawnRadius = config.getInt(path + ".spawn-radius", 30);
@@ -93,6 +108,9 @@ public class DOption extends Configable {
 		if (config.contains(path + ".ticket-required")) {
 			this.ticketRequired = config.getBoolean(path + ".ticket-required");
 		}
+		this.difficulty = config.getBoolean(path + ".difficulty");
+		this.spawnRadius = config.getDouble(path + ".spawn-radius", 35);
+		this.permission = config.getString(path + ".permission", "");
 	}
 
 	@Override
@@ -107,6 +125,9 @@ public class DOption extends Configable {
 		config.set(path + ".cooldown", this.cooldown);
 		config.set(path + ".allow-velocity", this.allowVelocity);
 		config.set(path + ".gui-slot", this.guiSlot);
+		config.set(path + ".spawn-radius", this.spawnRadius);
+		config.set(path + ".difficulty", this.difficulty);
+		config.set(path + ".permission", this.permission);
 	}
 	
 }

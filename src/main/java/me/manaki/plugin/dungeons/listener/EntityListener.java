@@ -1,26 +1,55 @@
 package me.manaki.plugin.dungeons.listener;
 
 import io.lumine.xikage.mythicmobs.MythicMobs;
+import me.manaki.plugin.dungeons.dungeon.Dungeon;
+import me.manaki.plugin.dungeons.dungeon.status.DStatus;
 import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DGameUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DPlayerUtils;
 import me.manaki.plugin.dungeons.dungeon.util.DSlaveUtils;
 import me.manaki.plugin.dungeons.guarded.Guardeds;
-import me.manaki.plugin.dungeons.main.Dungeons;
-import me.manaki.plugin.dungeons.slave.Slaves;
+import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.v4.world.WorldCache;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 
+import java.util.Map;
+
 public class EntityListener implements Listener {
-	
+
+	private final Dungeons plugin;
+
+	public EntityListener(Dungeons plugin) {
+		this.plugin = plugin;
+	}
+
+	/*
+	 * Villager interact
+	 */
+	@EventHandler
+	public void onSlaveClick(PlayerInteractAtEntityEvent e) {
+		if (e.getRightClicked() instanceof Villager) {
+			Player player = e.getPlayer();
+			if (DPlayerUtils.isInDungeon(player)) {
+				var entity = e.getRightClicked();
+				var status = DPlayerUtils.getStatus(player);
+				if (status.getTurnStatus().getSlaveToSaves().contains(entity)) {
+					e.setCancelled(true);
+					player.sendMessage("§aGiữ nút Shift để Giải cứu");
+					player.playSound(player.getLocation(), Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, 1, 1);
+				}
+			}
+		}
+	}
+
 	/*
 	 * Villager interact
 	 */
@@ -82,18 +111,28 @@ public class EntityListener implements Listener {
 	@EventHandler
 	public void onMobDamagedByPlayer(EntityDamageByEntityEvent e) {
 		if (!(e.getEntity() instanceof Monster)) return;
-		if (!(e.getDamager() instanceof Player)) return;
+
+		boolean isPlayer = false;
+		Player player = null;
+		if (e.getDamager() instanceof Player) {
+			isPlayer = true;
+			player = (Player) e.getDamager();
+		}
+		if (e.getDamager() instanceof Projectile
+				&& ((Projectile) e.getDamager()).getShooter() instanceof Player) {
+			isPlayer = true;
+			player = (Player) ((Projectile) e.getDamager()).getShooter();
+		}
+
+		if (!isPlayer) return;
 
 		var entity = (Monster) e.getEntity();
-		var player = (Player) e.getDamager();
-		for (String dID : DGameUtils.getOnlineDungeons()) {
-			var status = DGameUtils.getStatus(dID);
+		for (DStatus status : plugin.getDungeonManager().getStatuses()) {
 			if (status.getTurnStatus().getMobToKills().containsKey(entity)) {
 				Guardeds.setLastEntityTarget(entity, Guardeds.TARGET_COOLDOWN);
 				entity.setTarget(player);
 			}
 		}
-
 	}
 
 	/*
@@ -107,24 +146,22 @@ public class EntityListener implements Listener {
 	public void onEntitySpawn(EntitySpawnEvent e) {
 		if (e.getEntity() instanceof LivingEntity) {
 			LivingEntity le = (LivingEntity) e.getEntity();
-			DDataUtils.getDungeons().values().forEach(dungeon -> {
-				dungeon.getInfo().getWorlds().forEach(w -> {
+			for (Map.Entry<String, Dungeon> entry : DDataUtils.getDungeons().entrySet()) {
+				var id = entry.getKey();
+				var dungeon = entry.getValue();
+				for (var w : plugin.getWorldManager().getActiveWorldNames(id)) {
 					World world = Bukkit.getWorld(w);
 					if (world == null) return;
-					if (le.getWorld() == world) {
-						Bukkit.getScheduler().runTaskLater(Dungeons.get(), () -> {
-							if (le instanceof Player) return;
-							if (!le.hasMetadata("Dungeon3") && le.getType() != EntityType.PLAYER) {
-								if (MythicMobs.inst().getMobManager().getMythicMobInstance(le) == null) {
-									le.remove();
-									if (le.getType() == EntityType.VILLAGER) System.out.println(le.getType());
-								}
-							}
-						}, 10);
-						return;
-					}
-				});
-			});
+					if (le.getWorld() != world) continue;
+					Bukkit.getScheduler().runTaskLater(Dungeons.get(), () -> {
+						if (le instanceof Player) return;
+						if (!le.hasMetadata("Dungeon3") && le.getType() != EntityType.PLAYER && MythicMobs.inst().getMobManager().getMythicMobInstance(le) == null) {
+							le.remove();
+						} }, 10);
+					return;
+
+				}
+			}
 		}
 	}
 	

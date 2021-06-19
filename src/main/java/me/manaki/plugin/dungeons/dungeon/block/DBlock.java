@@ -11,7 +11,13 @@ public class DBlock extends Configable {
 	
 	private Material m;
 	private int d;
-	private Location location;
+
+	private double x;
+	private double y;
+	private double z;
+
+	private float pitch;
+	private float yaw;
 	
 	public DBlock(FileConfiguration config, String path) {
 		super(config, path);
@@ -20,7 +26,11 @@ public class DBlock extends Configable {
 	public DBlock(Material material, int durability, Location location) {
 		this.m = material;
 		this.d = durability;
-		this.location = location;
+		this.x = location.getX();
+		this.y = location.getY();
+		this.z = location.getZ();
+		this.yaw = location.getYaw();
+		this.pitch = location.getPitch();
 	}
 	
 	public Material getMaterial() {
@@ -30,9 +40,9 @@ public class DBlock extends Configable {
 	public int getBlockDamage() {
 		return this.d;
 	}
-	
-	public Location getLocation() {
-		return this.location;
+
+	public Location getLocation(World world) {
+		return new Location(world, x, y, z, yaw, pitch);
 	}
 
 	@Override
@@ -40,20 +50,29 @@ public class DBlock extends Configable {
 		String s = config.getString(path);
 		
 		Material m = Material.valueOf(s.split(";")[0]);
-		int d = Integer.valueOf(s.split(";")[1]);
-		World w = Bukkit.getWorld(s.split(";")[2]);
-		double x = Double.valueOf(s.split(";")[3]);
-		double y = Double.valueOf(s.split(";")[4]);
-		double z = Double.valueOf(s.split(";")[5]);
-		
+		int d = Integer.parseInt(s.split(";")[1]);
+		double x = Double.parseDouble(s.split(";")[2]);
+		double y = Double.parseDouble(s.split(";")[3]);
+		double z = Double.parseDouble(s.split(";")[4]);
+		float p = 0;
+		float yw = 0;
+		if (s.split(";").length > 5) {
+			p = Float.parseFloat(s.split(";")[5]);
+			yw = Float.parseFloat(s.split(";")[6]);
+		}
+
 		this.m = m;
 		this.d = d;
-		this.location = new Location(w, x, y, z);
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.pitch = p;
+		this.yaw = yw;
 	}
 
 	@Override
 	public void save(FileConfiguration config, String path) {
-		String s = m.name() + ";" + d + ";" + location.getWorld().getName() + ";" + location.getX() + ";" + location.getY() + ";" + location.getZ();
+		String s = m.name() + ";" + d + ";" + this.x + ";" + this.y+ ";" + this.z + ";" + this.pitch + ";" + this.yaw;
 		config.set(path, s);
 	}
 	
