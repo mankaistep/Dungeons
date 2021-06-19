@@ -1,6 +1,8 @@
 package me.manaki.plugin.dungeons.v4.world;
 
 import me.manaki.plugin.dungeons.Dungeons;
+import me.manaki.plugin.dungeons.dungeon.Dungeon;
+import me.manaki.plugin.dungeons.dungeon.util.DDataUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +21,13 @@ public class WorldManager {
         this.activeWorlds = new ArrayList<>();
     }
 
+    public boolean isWorldFromDungeon(String worldName) {
+        for (Map.Entry<String, Dungeon> e : DDataUtils.getDungeons().entrySet()) {
+            if (worldName.contains(e.getValue().getInfo().getWorld() + "_")) return true;
+        }
+        return false;
+    }
+
     public List<String> getActiveWorldNames(String dungeonID) {
         return activeWorlds.stream().map(WorldCache::toWorldName).collect(Collectors.toList());
     }
@@ -29,6 +38,10 @@ public class WorldManager {
 
     public void removeActiveWorld(WorldCache cache) { ;
         activeWorlds.remove(cache);
+    }
+
+    public List<String> getActiveWorlds() {
+        return activeWorlds.stream().map(WorldCache::toWorldName).collect(Collectors.toList());
     }
 
 }

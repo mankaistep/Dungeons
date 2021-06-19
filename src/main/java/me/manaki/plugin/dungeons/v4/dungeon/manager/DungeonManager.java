@@ -31,6 +31,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -51,10 +52,16 @@ public class DungeonManager {
         this.statuses = Lists.newArrayList();
     }
 
+    /*
+    Get plugin
+     */
     public Dungeons getPlugin() {
         return plugin;
     }
 
+    /*
+    Get status
+     */
     public DStatus getStatus(String cacheID) {
         for (DStatus status : statuses) {
             if (status.getCache().toID().equalsIgnoreCase(cacheID)) return status;
@@ -62,14 +69,23 @@ public class DungeonManager {
         return null;
     }
 
+    /*
+    Get all statuses
+     */
     public List<DStatus> getStatuses() {
         return statuses;
     }
 
+    /*
+    Remove status
+     */
     public void removeStatus(DStatus status) {
         this.statuses.remove(status);
     }
 
+    /*
+    Start a dungeon
+     */
     public void start(String dungeonID, Difficulty difficulty, List<UUID> players) {
         // Remove offline players and set not flying
         for (UUID uuid : players) {
@@ -173,6 +189,9 @@ public class DungeonManager {
         }.runTaskTimer(plugin, 0, 10);
     }
 
+    /*
+    Start the next turn of a dungeon
+     */
     public void startNextTurn(String dungeonCache, DGuardedTask guardTask) {
         var status = getStatus(dungeonCache);
         int turn = status.getTurn();
@@ -186,6 +205,9 @@ public class DungeonManager {
         else start(dungeonCache, turn + 1, guardTask);
     }
 
+    /*
+    Start a turn in dungeon
+     */
     public void start(String dungeonCache, int turn,  DGuardedTask guardTask) {
         var ds = getStatus(dungeonCache);
         var world = ds.getCache().getWorldCache().toWorld();
@@ -223,6 +245,9 @@ public class DungeonManager {
         }, dturn.getSpawn().getDelay());
     }
 
+    /*
+    Win a turn of dungeon
+     */
     public void win(String dungeonCache, int turn, BukkitRunnable task) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
@@ -285,6 +310,9 @@ public class DungeonManager {
         }
     }
 
+    /*
+    Win a dungeon
+     */
     public void win(String dungeonCache) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
@@ -327,6 +355,9 @@ public class DungeonManager {
         }
     }
 
+    /*
+    Lose a dungeon
+     */
     public void lose(String dungeonCache) {
         var status = getStatus(dungeonCache);
         var turn = status.getTurn();
@@ -355,6 +386,9 @@ public class DungeonManager {
         }
     }
 
+    /*
+    Do finish stuff
+     */
     public void doFinish(String dungeonCache, DungeonResult result) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
@@ -415,6 +449,9 @@ public class DungeonManager {
         Bukkit.getPluginManager().callEvent(new DungeonFinishEvent(dungeonID, status, result));
     }
 
+    /*
+    Check if a dungeon is playing
+     */
     public boolean isPlaying(String dungeonCache) {
         for (DStatus status : this.statuses) {
             if (status.getCache().toID().equalsIgnoreCase(dungeonCache)) return true;
@@ -422,12 +459,21 @@ public class DungeonManager {
         return false;
     }
 
-    public void clearEntities(World world) {
+    /*
+    Clear all of entities existing in the world
+     */
+    public int clearEntities(World world) {
+        int count = 0;
         if (world != null) {
             world.getEntities().forEach(DGameUtils::checkAndRemove);
+            count++;
         }
+        return count;
     }
 
+    /*
+    Spawn blocks
+     */
     public void spawnBlocks(String dungeonID, World world) {
         Dungeon d = DDataUtils.getDungeon(dungeonID);
         d.getBlocks().forEach((i, b) -> {
@@ -436,6 +482,9 @@ public class DungeonManager {
         });
     }
 
+    /*
+    Spawn block-break effects
+     */
     public void spawnBlockBreaks(String dungeonCache, int turn) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
@@ -452,6 +501,9 @@ public class DungeonManager {
         }); 
     }
 
+    /*
+    Run start commands of a dungeon
+     */
     public void runStartCommands(String dungeonCache, int turn) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
@@ -464,6 +516,9 @@ public class DungeonManager {
         });
     }
 
+    /*
+    Spawn mobs of a turn
+     */
     public void spawnMobs(String dungeonCache, int turn) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
@@ -486,6 +541,9 @@ public class DungeonManager {
         });
     }
 
+    /*
+    Spawn slaves of a turn
+     */
     public void spawnSlaves(String dungeonCache, int turn) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
@@ -501,6 +559,9 @@ public class DungeonManager {
         });
     }
 
+    /*
+    Spawn guarded of a turn
+     */
     public void spawnGuarded(String dungeonCache, int turn, DGuardedTask guardedTask) {
         var status = getStatus(dungeonCache);
         var dungeonID = status.getCache().getDungeonID();
@@ -525,12 +586,18 @@ public class DungeonManager {
         status.addTask(br);
     }
 
+    /*
+    Featherboard hook
+     */
     public void featherBoardCheck(Player player, boolean isDefault) {
         if (plugin.featherBoard == null) return;
         if (isDefault) FeatherBoardAPI.resetDefaultScoreboard(player);
         else FeatherBoardAPI.showScoreboard(player, Dungeons.get().featherBoard);
     }
 
+    /*
+    Get all uuids of players in dungeon
+     */
     public List<Player> inDungeonFilter(List<UUID> uuids, String id) {
         Dungeon d = DDataUtils.getDungeon(id);
         return uuids.stream()
@@ -539,6 +606,9 @@ public class DungeonManager {
                 .collect(Collectors.toList());
     }
 
+    /*
+    Get current dungeon that player're playing
+     */
     public String getCurrentDungeonCache(Player player) {
         for (DStatus status : this.statuses) {
             if (status.getPlayers().contains(player.getUniqueId())) return status.getCache().toID();
@@ -546,6 +616,9 @@ public class DungeonManager {
         return null;
     }
 
+    /*
+    Kick someone out of current dungeon
+     */
     public void kick(Player player, boolean toSpawn) {
         String id = getCurrentDungeonCache(player);
         if (id == null) return;
@@ -564,6 +637,9 @@ public class DungeonManager {
         featherBoardCheck(player, true);
     }
 
+    /*
+    Do stuff when player r dead in dungeon
+     */
     public void dead(Player player, boolean teleport) {
         String cacheID = getCurrentDungeonCache(player);
         if (cacheID == null) return;

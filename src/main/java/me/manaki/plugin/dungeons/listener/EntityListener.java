@@ -20,6 +20,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 
 import java.util.Map;
 
@@ -144,25 +145,19 @@ public class EntityListener implements Listener {
 	
 	@EventHandler
 	public void onEntitySpawn(EntitySpawnEvent e) {
-		if (e.getEntity() instanceof LivingEntity) {
-			LivingEntity le = (LivingEntity) e.getEntity();
-			for (Map.Entry<String, Dungeon> entry : DDataUtils.getDungeons().entrySet()) {
-				var id = entry.getKey();
-				var dungeon = entry.getValue();
-				for (var w : plugin.getWorldManager().getActiveWorldNames(id)) {
-					World world = Bukkit.getWorld(w);
-					if (world == null) return;
-					if (le.getWorld() != world) continue;
-					Bukkit.getScheduler().runTaskLater(Dungeons.get(), () -> {
-						if (le instanceof Player) return;
-						if (!le.hasMetadata("Dungeon3") && le.getType() != EntityType.PLAYER && MythicMobs.inst().getMobManager().getMythicMobInstance(le) == null) {
-							le.remove();
-						} }, 10);
-					return;
+		if (!(e.getEntity() instanceof LivingEntity)) return;
+		World world = e.getEntity().getWorld();;
+		if (!plugin.getWorldManager().isWorldFromDungeon(world.getName())) return;
 
-				}
-			}
-		}
+		LivingEntity le = (LivingEntity) e.getEntity();
+		le.setMetadata("Dungeon3.checking", new FixedMetadataValue(Dungeons.get(), ""));
+		Bukkit.getScheduler().runTaskLater(Dungeons.get(), ()	 -> {
+			if (le instanceof Player) return;
+			if (!le.hasMetadata("Dungeon3")
+					&& le.getType() != EntityType.PLAYER
+					&& MythicMobs.inst().getMobManager().getMythicMobInstance(le) == null
+			) le.remove();
+		}, 10);
 	}
 	
 }

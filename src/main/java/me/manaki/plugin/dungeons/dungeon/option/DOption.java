@@ -9,7 +9,6 @@ import java.util.Objects;
 
 public class DOption extends Configable {
 
-	private int spawnRadius;
 	private boolean ticketRequired;
 	private int maxTime;
 	private MinMax player;
@@ -25,19 +24,6 @@ public class DOption extends Configable {
 	
 	public DOption(FileConfiguration config, String path) {
 		super(config, path);
-	}
-	
-//	public DOption(int maxTime, int minPlayer, int maxPlayer, int minLevel, int maxLevel, int guiSlot, boolean lavaDead, boolean waterDead, int respawn, boolean mobGlow) {
-//		this.maxTime = maxTime;
-//		this.player = new MinMax(minPlayer, maxPlayer);
-//		this.level = new MinMax(minLevel, maxLevel);
-//		this.guiSlot = guiSlot;
-//		this.mobGlow = mobGlow;
-//	}
-
-
-	public int getSpawnRadius() {
-		return spawnRadius;
 	}
 
 	public int getMaxTime() {
@@ -90,7 +76,6 @@ public class DOption extends Configable {
 
 	@Override
 	public void load(FileConfiguration config, String path) {
-		this.spawnRadius = config.getInt(path + ".spawn-radius", 30);
 		this.maxTime = config.getInt(path + ".max-time");
 		this.player = new MinMax(Objects.requireNonNull(config.getString(path + ".player")));
 		this.level = new MinMax(Objects.requireNonNull(config.getString(path + ".level")));

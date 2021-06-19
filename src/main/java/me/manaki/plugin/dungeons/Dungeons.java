@@ -19,6 +19,7 @@ import me.manaki.plugin.dungeons.room.RoomManager;
 import me.manaki.plugin.dungeons.room.gui.DungeonSelectGUI;
 import me.manaki.plugin.dungeons.slave.Slaves;
 import me.manaki.plugin.dungeons.task.DMoneyCoinTask;
+import me.manaki.plugin.dungeons.task.EntityClearTask;
 import me.manaki.plugin.dungeons.task.RoomTask;
 import me.manaki.plugin.dungeons.ticket.Tickets;
 import me.manaki.plugin.dungeons.util.Utils;
@@ -128,6 +129,7 @@ public class Dungeons extends JavaPlugin {
 	public void registerTasks() {
 		RoomTask.start(this);
 		WorldTask.start(this);
+		EntityClearTask.start(this);
 	}
 	
 	public void hookPlugins() {

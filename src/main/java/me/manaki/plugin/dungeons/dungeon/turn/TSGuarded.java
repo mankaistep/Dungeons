@@ -35,8 +35,4 @@ public class TSGuarded {
         return this.slv + ";" + this.loc;
     }
 
-    public boolean isGuardedNull() {
-        return this.slv == null || this.slv.equals("");
-    }
-
 }

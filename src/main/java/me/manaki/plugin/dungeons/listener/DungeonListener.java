@@ -123,55 +123,6 @@ public class DungeonListener implements Listener {
 	}
 	
 	/*
-	 * Cancel break/build block
-	 */
-	
-//	@EventHandler
-//	public void onBreak(BlockBreakEvent e) {
-//		DDataUtils.getDungeons().values().forEach(dungeon -> {
-//			dungeon.getInfo().getWorlds().forEach(w -> {
-//				World world = Bukkit.getWorld(w);
-//				if (world == null) return;
-//				if (e.getBlock().getWorld() != world) return;
-//				Player player = e.getPlayer();
-//				if (!player.hasPermission("dungeon3.build")) {
-//					player.sendMessage("§cBạn không thể phá block");
-//					e.setCancelled(true);
-//				}
-//			});
-//		});
-//	}
-	
-//	@EventHandler
-//	public void onBreak(BlockPlaceEvent e) {
-//		DDataUtils.getDungeons().values().forEach(dungeon -> {
-//			dungeon.getInfo().getWorlds().forEach(w -> {
-//				World world = Bukkit.getWorld(w);
-//				if (world == null) return;
-//				if (e.getBlock().getWorld() != world) return;
-//				Player player = e.getPlayer();
-//				if (!player.hasPermission("dungeon3.build")) {
-//					player.sendMessage("§cBạn không thể đặt block");
-//					e.setCancelled(true);
-//				}
-//			});
-//		});
-//	}
-	
-	// Remove blocks of explosion
-//	@EventHandler
-//	public void onExplode(EntityExplodeEvent e) {
-//		DDataUtils.getDungeons().values().forEach(dungeon -> {
-//			dungeon.getInfo().getWorlds().forEach(w -> {
-//				World world = Bukkit.getWorld(w);
-//				if (world == null) return;
-//				if (e.getEntity().getWorld() != world) return;
-//				e.blockList().clear();
-//			});
-//		});
-//	}
-	
-	/*
 	 *  Load on first join
 	 */
 	

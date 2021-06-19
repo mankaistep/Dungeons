@@ -44,10 +44,6 @@ public class DGameUtils {
 		return !isPlaying(id);
 	}
 	
-//	public static Set<String> getOnlineDungeons() {
-//		return statuses.keySet();
-//	}
-	
 	public static boolean isLastTurn(String id, int turn) {
 		return turn == DDataUtils.getDungeon(id).getTurns().size();
 	}
@@ -58,21 +54,11 @@ public class DGameUtils {
 	}
 	
 	public static void checkAndRemove(Entity e) {
+		if (e instanceof Player) return;
+		if (e.hasMetadata("Dungeon3.checking")) return;
 		if (e.hasMetadata("NPC") && !e.hasMetadata("Dungeon3")) return;
-		if (e instanceof Player) {
-//			((Player) e).teleport(Utils.getPlayerSpawn());
-			return;
-		}
 		if (e instanceof LivingEntity || e instanceof Item) e.remove();
 	}
-	
-//	public static void broadcast(String id, String mess) {
-//		DStatus status = getStatus(id);
-//		status.getPlayers().forEach(uuid -> {
-//			Player p = Bukkit.getPlayer(uuid);
-//			p.sendMessage(mess);
-//		});
-//	}
 	
 	public static String getStandingCheckpoint(String id, Location l) {
 		Dungeon d = DDataUtils.getDungeon(id);
