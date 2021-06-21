@@ -181,6 +181,33 @@ public enum RoomStatus {
         }
     },
 
+    NOT_ENOUGH_LEVEL {
+        @Override
+        public ItemStack getIcon(Player player, Room room) {
+            var d = DDataUtils.getDungeon(room.getDungeonID());
+            var is = new ItemStack(Material.MAGENTA_CONCRETE);
+            var ism = new ItemStackManager(is);
+            ism.setName("§d§lPhòng #" + room.getID());
+            var lore = new ArrayList<String>();
+            lore.add("");
+            lore.add("§aPhó bản: §f" + d.getInfo().getName());
+
+            var dfc = d.getOption().hasDifficulty() ? room.getDifficulty() : null;
+            var dfcname = d.getOption().hasDifficulty() ? room.getDifficulty().getName() : "Không có";
+            lore.add("§aĐộ khó: §f" + dfcname);
+
+            lore.add("");
+            lore.add("§6Người chơi: §f" + room.getPlayers().size() + "/" + d.getOption().getPlayer().getMax());
+
+            lore.add("");
+            lore.add("§c§oYêu cầu cấp " + room.getDifficulty().getLevelRequired().getMin() + " » " + room.getDifficulty().getLevelRequired().getMax());
+
+            ism.setLore(lore);
+
+            return is;
+        }
+    },
+
     EMPTY {
         @Override
         public ItemStack getIcon(Player player, Room room) {

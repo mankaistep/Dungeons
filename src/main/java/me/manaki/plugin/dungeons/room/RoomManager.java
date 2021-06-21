@@ -67,10 +67,19 @@ public class RoomManager {
 
         // Didnt has room
         else {
+            // Full
             if (room.getPlayers().size() == d.getOption().getPlayer().getMax()) return RoomStatus.FULL;
+
+            // Ticket
             if (d.getOption().isTicketRequired()) {
                 if (!Tickets.has(player, room.getDungeonID())) return RoomStatus.NO_TICKET;
             }
+
+            // Difficulty
+            if (room.getDifficulty() != null) {
+                if (!room.getDifficulty().getLevelRequired().test(player.getLevel())) return RoomStatus.NOT_ENOUGH_LEVEL;
+            }
+
             return RoomStatus.CAN_JOIN;
         }
     }
