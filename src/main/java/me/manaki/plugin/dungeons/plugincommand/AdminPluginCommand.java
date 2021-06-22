@@ -124,6 +124,20 @@ public class AdminPluginCommand implements CommandExecutor {
 				Player p = (Player) sender;
 				DMoneyCoin.drop(p.getLocation(), new DMoneyCoin(value));
 			}
+
+			else if (args[0].equalsIgnoreCase("testreward")) {
+				List<String> rewards;
+				var id = args[1];
+				var d = DDataUtils.getDungeon(id);
+				Difficulty dfct = null;
+				if (d.getOption().hasDifficulty()) {
+					dfct = Difficulty.valueOf(args[2].toUpperCase());
+				}
+				rewards = d.getReward().getReward(dfct);
+				for (String s : rewards) {
+					new me.manaki.plugin.dungeons.command.Command(s).execute((Player) sender);
+				}
+			}
 			
 			else if (args[0].equalsIgnoreCase("tofolder")) {
 				File folder = new File(Dungeons.get().getDataFolder(), "dungeons");
@@ -251,20 +265,24 @@ public class AdminPluginCommand implements CommandExecutor {
 		List<String> m = Lists.newArrayList();
 		
 		m.add("");
-		m.add(Utils.c("&c&lDungeon3 by MankaiStep"));
-		m.add(Utils.c("&2/dungeon3 reload: &aReload plugin"));
-		m.add(Utils.c("&2/dungeon3 tofolder: &aSave dungeons to folder"));
-		m.add(Utils.c("&2/dungeon3 setgod <player> <tick>: &aSet player to god"));
-		m.add(Utils.c("&2/dungeon3 start <dungeon>: &aStart dungeon only you"));
-		m.add(Utils.c("&2/dungeon3 setblock <dungeon> <id>: &aSet block of dungeon"));
-		m.add(Utils.c("&2/dungeon3 setlocation <dungeon> <radius> <id>: &aSet location of dungeon"));	
-		m.add(Utils.c("&2/dungeon3 tp <world> <dungeon> <locationID>: &aTeleport"));
-		m.add(Utils.c("&2/dungeon3 count <mobID> <dungeon>: &aCount amount of mobs"));
-		m.add(Utils.c("&2/dungeon3 getticket <dungeon>: &aGet ticket of <dungeon>"));
-		m.add(Utils.c("&2/dungeon3 dropmoney <value>: &aDrop money coin"));
-		m.add(Utils.c("&2/dungeon3 editmap <world>: &aEdit map"));
-		m.add(Utils.c("&2/dungeon3 savemap <world>: &aEdit map"));
+		m.add(Utils.c("&c&lDungeons by MankaiStep"));
 		m.add("");
+		m.add(Utils.c("&6/dungeon3 reload: &eReload plugin"));
+		m.add(Utils.c("&6/dungeon3 tofolder: &eSave dungeons to folder"));
+		m.add("");
+		m.add(Utils.c("&6/dungeon3 setgod <player> <tick>: &eSet player to god"));
+		m.add(Utils.c("&6/dungeon3 tp <world> <dungeon> <locationID>: &eTeleport"));
+		m.add(Utils.c("&6/dungeon3 count <mobID> <dungeon>: &eCount amount of mobs"));
+		m.add(Utils.c("&6/dungeon3 getticket <dungeon>: &eGet ticket of <dungeon>"));
+		m.add(Utils.c("&6/dungeon3 dropmoney <value>: &eDrop money coin"));
+		m.add(Utils.c("&6/dungeon3 testreward <dungeon> <difficulty>: &eTest reward of a dungeon"));
+		m.add("");
+		m.add(Utils.c("&6/dungeon3 start <dungeon>: &eStart dungeon only you"));
+		m.add(Utils.c("&6/dungeon3 setblock <dungeon> <id>: &eSet block of dungeon"));
+		m.add(Utils.c("&6/dungeon3 setlocation <dungeon> <radius> <id>: &eSet location of dungeon"));
+		m.add("");
+		m.add(Utils.c("&6/dungeon3 editmap <world>: &eEdit map"));
+		m.add(Utils.c("&6/dungeon3 savemap <world>: &eEdit map"));
 		
 		m.forEach(sender::sendMessage);
 	}
