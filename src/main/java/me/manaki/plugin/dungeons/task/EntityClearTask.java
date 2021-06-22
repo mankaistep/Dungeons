@@ -17,7 +17,7 @@ public class EntityClearTask extends BukkitRunnable {
         for (String wn : plugin.getWorldManager().getActiveWorlds()) {
             var w = Bukkit.getWorld(wn);
             if (w == null) continue;
-            plugin.getDungeonManager().clearEntities(w);
+            plugin.getDungeonManager().clearVanillaMobs(w);
         }
     }
 

@@ -2,6 +2,7 @@ package me.manaki.plugin.dungeons.v4.dungeon.manager;
 
 import be.maximvdw.featherboard.api.FeatherBoardAPI;
 import com.google.common.collect.Lists;
+import io.lumine.xikage.mythicmobs.MythicMobs;
 import me.manaki.plugin.dungeons.Dungeons;
 import me.manaki.plugin.dungeons.command.CType;
 import me.manaki.plugin.dungeons.command.Command;
@@ -32,6 +33,8 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -424,16 +427,13 @@ public class DungeonManager {
                     players.forEach(Utils::toSpawn);
 
                     // Clear entities
-                    clearEntities(world);
+                    clearMythicMobs(world);
 
                     Tasks.async(() -> {
                         // Add pending cache
                         plugin.getWorldLoader().addPendingCache(status.getCache().getWorldCache());
-//                        plugin.getWorldLoader().unload(status.getCache().getWorldCache().toWorldName(), true);
                     });
 
-                    // Remove caches
-//                    plugin.getWorldManager().removeActiveWorld( status.getCache().getWorldCache());
                     status.stopAllSounds();
                     removeStatus(status);
                     this.cancel();
@@ -463,14 +463,36 @@ public class DungeonManager {
     /*
     Clear all of entities existing in the world
      */
-    public int clearEntities(World world) {
-        int count = 0;
-        if (world != null) {
-            world.getEntities().forEach(DGameUtils::checkAndRemove);
-            count++;
+    public int clearMythicMobs(World world) {
+        int c = 0;
+        for (LivingEntity le : MythicMobs.inst().getMobManager().getAllMythicEntities()) {
+            if (le.getWorld() == world) {
+                c++;
+                le.remove();
+            }
         }
-        return count;
+        return c;
     }
+
+    /*
+    Clear vanilla entities
+     */
+    public int clearVanillaMobs(World world) {
+        int c = 0;
+        for (Entity e : world.getEntities()) {
+            if (e.hasMetadata("Dungeon3.checking")) continue;
+            if (e instanceof Mob) {
+                Mob m = (Mob) e;
+                if (m.getCustomName() == null) {
+                    m.remove();
+                    c++;
+                }
+            }
+        }
+
+        return c;
+    }
+
 
     /*
     Spawn blocks
